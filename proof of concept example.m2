@@ -45,7 +45,8 @@ G=divisor(sub(I,S))
 p=char R;t=10/p;
 tIdeal=I^(floor(t)-fptI+1)-- from Henriques paper
 e=1
-uBound1=frobeniusRoot(e,{ceiling (t*p^e)},{I})---stable immediately 
+uBound=frobeniusRoot(e,{ceiling (t*p^e)},{I})---stable immediately 
+uBound==tIdeal
 
 f=1
 stuff=tau1'*ideal(p^f*t*G)*S^1;
