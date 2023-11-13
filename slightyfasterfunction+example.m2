@@ -13,23 +13,26 @@ needsPackage"Divisor"
 
 -------------------------------
 
-tIdeal = (I,t,e0,f0)->( ---I an ideal, t=a/p^e, and  e0, f0 natural numbers saying how long to run
+---Note: right now may not work for t with denominator other than p (due to first bound computation)...should be easy fix
+--also may want to rename uBound and lBound
+
+tIdeal = (I,t,e0,f0)->( ---I an ideal, t=a/p, and  e0, f0 natural numbers saying how long to run 
     p:=char ring I;
     RI:=reesAlgebra I;
     tau:=sub((testModule(first flattenRing RI))#0,RI);
     G:=divisor(sub(I,RI));
     e1:=1;
-    uBound:=frobeniusRoot(1,{ceiling(t* (p-1))},{I});
+    uBound:=frobeniusRoot(1,{ceiling(t*(p))},{I});
     uBound1:={};
     for i from 1 to e0 do(
 	e1=i;
 	uBound1=uBound;
-	uBound=frobeniusRoot(i+1,{ceiling(t* ((p)^(i+1)-1))},{I});
+	uBound=frobeniusRoot(i+1,{ceiling(t*((p)^(i+1)))},{I});
 	if uBound1==uBound then break;
 	);
     f1:=0;
     lBound:={};
-    for j from e1 to f0 do(
+    for j from 1 to f0 do(
 	f1=j;
 	lBound=frobeniusRoot(j,embedAsIdeal(prune HH_0(directImageComplex (tau*ideal(p^j*t*G)*RI^1))));
     	if lBound==uBound then break;
