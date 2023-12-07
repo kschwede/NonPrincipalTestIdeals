@@ -14,7 +14,6 @@ needsPackage"Divisor"
 -------------------------------
 
 ---Note: right now may not work for t with denominator other than p (due to first bound computation)...should be easy fix
---also may want to rename uBound and lBound
 
 tIdeal = (I,t,e0,f0)->( ---I an ideal, t=a/p, and  e0, f0 natural numbers saying how long to run 
     p:=char ring I;
@@ -22,22 +21,22 @@ tIdeal = (I,t,e0,f0)->( ---I an ideal, t=a/p, and  e0, f0 natural numbers saying
     tau:=sub((testModule(first flattenRing RI))#0,RI);
     G:=divisor(sub(I,RI));
     e1:=1;
-    uBound:=frobeniusRoot(1,{ceiling(t*(p))},{I});
-    uBound1:={};
+    lBound:=frobeniusRoot(1,{ceiling(t*(p))},{I});
+    lBound1:={};
     for i from 1 to e0 do(
 	e1=i;
-	uBound1=uBound;
-	uBound=frobeniusRoot(i+1,{ceiling(t*((p)^(i+1)))},{I});
-	if uBound1==uBound then break;
+	lBound1=lBound;
+	lBound=frobeniusRoot(i+1,{ceiling(t*((p)^(i+1)))},{I});
+	if lBound1==lBound then break;
 	);
     f1:=0;
-    lBound:={};
+    uBound:={};
     for j from 1 to f0 do(
 	f1=j;
-	lBound=frobeniusRoot(j,embedAsIdeal(prune HH_0(directImageComplex (tau*ideal(p^j*t*G)*RI^1))));
+	uBound=frobeniusRoot(j,embedAsIdeal(prune HH_0(directImageComplex (tau*ideal(p^j*t*G)*RI^1))));
     	if lBound==uBound then break;
 	);
-    return (lBound,e1,f1) 
+    return (uBound,e1,f1) 
     );
 
 -------------------- can test with monomial ideals
