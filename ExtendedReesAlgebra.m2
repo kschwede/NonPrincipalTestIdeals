@@ -17,7 +17,7 @@ end
 
 load "ExtendedReesAlgebra.m2"
  R = QQ[x,y,z]
- J = ideal(x^5, y^4*z^3*x^3, y^5, z^4)
+ J = ideal(x^5, y^4*z^3*x^3, y^5, y^3*z^3, z^4)
  J = ideal(x^3,y^4,z^4,random(2, R));
  S = (flattenRing extendedReesAlgebra(J))#0
  T = (flattenRing reesAlgebra(J))#0
