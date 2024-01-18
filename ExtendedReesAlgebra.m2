@@ -19,7 +19,7 @@ end
 restart
 break
 load "ExtendedReesAlgebra.m2"
- R = ZZ/5[x,y,z]
+ R = ZZ/3[x,y,z] --higher characteristics really get slow
  J = ideal(x^2, z*x, y^2, z^3)
  J = ideal(x^3,y^4,z^4,random(2, R));
  S = (flattenRing extendedReesAlgebra(J))#0
@@ -30,6 +30,6 @@ load "ExtendedReesAlgebra.m2"
  minimalPrimes(ideal(0_T))
 
  loadPackage( "TestIdeals", Reload=>true, DebuggingMode=>true)
- debugLevel = 2
+ debugLevel = 1
  time testModule S;
 time testModule T;
