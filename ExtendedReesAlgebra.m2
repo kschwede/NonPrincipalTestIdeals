@@ -2,8 +2,8 @@ extendedReesAlgebra = method(Options => {});
 
 extendedReesAlgebra(Ideal) := opts->(J1) -> (    
     I1 := reesIdeal(J1, Trim => true);
-    degList := (apply(gens ring reesIdeal J, j -> 1)) | {-1};
-    T2 := ring(J1)[(gens ring reesIdeal J)|{ti}, Degrees=>degList];
+    degList := (apply(gens ring reesIdeal J1, j -> 1)) | {-1};
+    T2 := ring(J1)[(gens ring reesIdeal J1)|{ti}, Degrees=>degList];
     --S2 := T2/(sub(I1, T2));    
     L1 := apply(gens ring I1, u -> sub(u, T2));
     L0 := apply(first entries mingens J1, h -> sub(h, T2));
@@ -11,9 +11,20 @@ extendedReesAlgebra(Ideal) := opts->(J1) -> (
     S2
 )
 
+end
+restart
+break
+load "ExtendedReesAlgebra.m2"
+R = ZZ/2[x,y]
+R = ZZ/2[x,y, Degrees=>{0,0}]
+m = ideal(x^3,y^3)
+S = (flattenRing extendedReesAlgebra(m))#0
+describe S
 
-
-
+ loadPackage( "TestIdeals", Reload=>true, DebuggingMode=>true)
+viewHelp testModule
+testModule(S)
+testModule(2/3, ti)
 
 
 end 
