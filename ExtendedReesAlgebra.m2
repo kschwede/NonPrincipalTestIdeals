@@ -2,12 +2,14 @@ extendedReesAlgebra = method(Options => {});
 
 extendedReesAlgebra(Ideal) := opts->(J1) -> (    
     I1 := reesIdeal(J1, Trim => true);
-    degList := (apply(gens ring reesIdeal J1, j -> 1)) | {-1};
-    T2 := ring(J1)[(gens ring reesIdeal J1)|{ti}, Degrees=>degList];
+    degList := apply( (degrees ring J1), j->{0,sum j} ) | (degrees ring reesIdeal J1) | {{-1,0}};
+--    print degList;
+    T2 := (coefficientRing ring(J1))[ (gens ring J1)|(gens ring reesIdeal J1)|{ti}, Degrees=>degList];
+    --T2 = ambient reesAlgebra J1; 
     --S2 := T2/(sub(I1, T2));    
-    L1 := apply(gens ring I1, u -> sub(u, T2));
+    L1 := apply(gens ring reesIdeal J1, u -> sub(u, T2));
     L0 := apply(first entries mingens J1, h -> sub(h, T2));
-    S2 := T2/((sub(I1, T2) + ideal( apply(#(gens ring I1), j -> ti*(L1#j) - (L0#j)))));
+    S2 := T2/((sub(ideal ring J1, T2) + sub(I1, T2) + ideal( apply(#(gens ring I1), j -> ti*(L1#j) - (L0#j)))));
     S2
 )
 
