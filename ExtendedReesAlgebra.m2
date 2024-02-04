@@ -1,13 +1,22 @@
+getValidVarName = method();
+getValidVarName(Ring) := (R1) -> (
+    --this should be smarter, not sure the right way to do it.  This ougt to work for now.
+    s1 := toList("abcdefghijklmnopqrstuvwxyz");
+    s1#(random (#s1))
+)
+
 extendedReesAlgebra = method(Options => {});
 
 extendedReesAlgebra(Ideal) := opts->(J1) -> (    
-    I1 := reesIdeal(J1, Trim => true);
-    degList := apply( (degrees ring J1), j->{0,sum j} ) | (degrees ring reesIdeal J1) | {{-1,0}};
+    if any (degrees ring J1, ll -> #ll > 1) then error "extendedReesAlgebra: currently only works for singly graded ambient rings";
+    I1 := reesIdeal(J1, Variable=>getValidVarName(ring J1));
+    degList := apply( (degrees ring J1), j->{0,sum j} ) | (degrees ring I1) | {{-1,0}};
 --    print degList;
-    T2 := (coefficientRing ring(J1))[ (gens ring J1)|(gens ring reesIdeal J1)|{ti}, Degrees=>degList];
+    ti := getSymbol "ti";
+    T2 := (coefficientRing ring(J1))[ (gens ring J1)|(gens ring I1)|{ti}, Degrees=>degList];
     --T2 = ambient reesAlgebra J1; 
     --S2 := T2/(sub(I1, T2));    
-    L1 := apply(gens ring reesIdeal J1, u -> sub(u, T2));
+    L1 := apply(gens ring I1, u -> sub(u, T2));
     L0 := apply(first entries mingens J1, h -> sub(h, T2));
     S2 := T2/((sub(ideal ring J1, T2) + sub(I1, T2) + ideal( apply(#(gens ring I1), j -> ti*(L1#j) - (L0#j)))));
     S2

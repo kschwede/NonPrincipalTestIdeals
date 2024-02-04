@@ -16,13 +16,13 @@ canonicalModule(Ring) := WeilDivisor => o->(R1) -> (
             else (
                 degList = apply(varList, q -> (degree(q))); );
         );
-        print degList;
-        print (-(sum degList));
+        --print degList;
+        --print (-(sum degList));
         ambcan = S1^{-(sum degList)};
     )
     else (
         ambcan = o.AmbientCanonical;
-        print (degrees ambcan);
+        --print (degrees ambcan);
     );
 	M1 := Ext^(dS - dR)(S1^1/I1, ambcan)
 )
