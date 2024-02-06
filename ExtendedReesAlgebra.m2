@@ -14,6 +14,7 @@ extendedReesAlgebra(Ideal) := opts->(J1) -> (
 --    print degList;
     ti := getSymbol "ti";
     T2 := (coefficientRing ring(J1))[ (gens ring J1)|(gens ring I1)|{ti}, Degrees=>degList];
+    ti = last gens T2;
     --T2 = ambient reesAlgebra J1; 
     --S2 := T2/(sub(I1, T2));    
     L1 := apply(gens ring I1, u -> sub(u, T2));
