@@ -20,6 +20,8 @@ extendedReesAlgebra(Ideal) := opts->(J1) -> (
     L1 := apply(gens ring I1, u -> sub(u, T2));
     L0 := apply(first entries mingens J1, h -> sub(h, T2));
     S2 := T2/((sub(ideal ring J1, T2) + sub(I1, T2) + ideal( apply(#(gens ring I1), j -> ti*(L1#j) - (L0#j)))));
+    S2#inverse = sub(ti, S2);
+    S2#reesIdeal = apply(gens ring(I1), z -> sub(z, S2));
     S2
 )
 

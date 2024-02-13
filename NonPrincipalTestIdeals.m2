@@ -71,8 +71,13 @@ extendedReesAlgebra(Ideal) := opts->(J1) -> (
     L1 := apply(gens ring I1, u -> sub(u, T2));
     L0 := apply(first entries mingens J1, h -> sub(h, T2));
     S2 := T2/((sub(ideal ring J1, T2) + sub(I1, T2) + ideal( apply(#(gens ring I1), j -> ti*(L1#j) - (L0#j)))));
+    S2#"inverseVariable" = sub(ti, S2);
+    S2#"degree1" = apply(gens ring(I1), z -> sub(z, S2));
+    S2#"originalList" = apply(L0, z->sub(z, S2));
     S2
 )
+
+
 
 --this should be like basis(n, M)
 gradedReesPiece = method(Options => {});
