@@ -9,18 +9,23 @@ newPackage(
     Reload=>true
     )
 export{
-    "extededReesAlgebra",
+    "extendedReesAlgebra",
     "canonicalModule",
-    "AmbientCanonical"--option
+    "reesModuleToIdeal",
+    "gradedReesPiece",
+    "AmbientCanonical",--option
+    "ExtendedReesAlgebra",--Type    
 }
 
 needsPackage "ReesAlgebra"
 needsPackage "Divisor"
 needsPackage "TestIdeals"
-load "ExtendedReesAlgebra.m2"
+--load "ExtendedReesAlgebra.m2"
 --load "CanonicalModules.m2"
+
+--the degress need to be fixed to work with extended Rees algebras
 canonicalModule = method(Options=>{AmbientCanonical => null})
-canonicalModule(Ring) := WeilDivisor => o->(R1) -> (
+canonicalModule(Ring) := Module => o->(R1) -> (
 	S1 := ambient R1;
 	I1 := ideal R1;
 	dR := dim R1;
@@ -37,17 +42,17 @@ canonicalModule(Ring) := WeilDivisor => o->(R1) -> (
         );
         --print degList;
         --print (-(sum degList));
-        ambcan = S1^{-(sum degList)};
+        ambcan = S1^{-(sum degList)}; -- these degrees are probably wrong for us, fix it.
     )
     else (
         ambcan = o.AmbientCanonical;
         --print (degrees ambcan);
     );
-	M1 := Ext^(dS - dR)(S1^1/I1, ambcan)
+	M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))
 )
 
-ClassicalReesAlgebra = new Type of Ring
-ExtendedReesAlgebra = new Type of Ring
+ClassicalReesAlgebra = new Type of QuotientRing
+ExtendedReesAlgebra = new Type of QuotientRing
 
 getValidVarName = method();
 getValidVarName(Ring) := (R1) -> (
@@ -69,11 +74,15 @@ extendedReesAlgebra(Ideal) := opts->(J1) -> (
     --T2 = ambient reesAlgebra J1; 
     --S2 := T2/(sub(I1, T2));    
     L1 := apply(gens ring I1, u -> sub(u, T2));
-    L0 := apply(first entries mingens J1, h -> sub(h, T2));
+    reesList := first entries mingens J1;
+    L0 := apply(reesList, h -> sub(h, T2));
     S2 := T2/((sub(ideal ring J1, T2) + sub(I1, T2) + ideal( apply(#(gens ring I1), j -> ti*(L1#j) - (L0#j)))));
-    S2#"inverseVariable" = sub(ti, S2);
-    S2#"degree1" = apply(gens ring(I1), z -> sub(z, S2));
-    S2#"originalList" = apply(L0, z->sub(z, S2));
+    S2#"InverseVariable" = sub(ti, S2);
+    S2#"BaseRing" = ring J1;
+    S2#"Degree1" = apply(gens ring(I1), z -> sub(z, S2));
+    S2#"OriginalList" = apply(L0, z->sub(z, S2));
+    S2#"BaseRingList" = reesList;
+    S2#"ExtendedReesAlgebra" = true;    
     S2
 )
 
@@ -82,12 +91,33 @@ extendedReesAlgebra(Ideal) := opts->(J1) -> (
 --this should be like basis(n, M)
 gradedReesPiece = method(Options => {});
 
-gradedReesPiece(ZZ, Module) := opts -> (n1, M1) -> (
-    if instance(ring M1, ClassicalReesAlgebra) then (
+gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
+    S1 := ring J1;
+    if instance(S1, ClassicalReesAlgebra) then (
 
     )
-    else if instance(ring M1, ExtededReesAlgebra) then (
-
+    else if (S1#"ExtendedReesAlgebra" == true) then (
+        if not isHomogeneous J1 then error "gradedReesPiece:  Expected a homogeneous ideal or a Reese pieces";
+        R1 := S1#"BaseRing";
+        genList := first entries gens J1;
+        degList := apply(genList, zz->first (degree zz) );
+        baseGens := S1#"BaseRingList";
+        badMap := map(R1, S1, (gens R1) | baseGens | {1}); --this is not well defined, but it should do the job.
+        tempGens := ideal(0_R1);
+        i := 0;
+        while (i < #genList) do (
+            if (degList#i == n1) then (
+                tempGens = tempGens + ideal(badMap(genList#i));
+            )
+            else if (degList#i > n1) then (
+                tempGens = tempGens + badMap(((S1#"InverseVariable")^((degList#i) - n1))*ideal((genList#i)));
+            )
+            else if (degList#i < n1) then (
+                tempGens = tempGens + (ideal(badMap(genList#i)))*(ideal baseGens)^(n1 - degList#i);
+            );
+            i = i+1;
+        );
+        return tempGens;
     )
     else (
         error "gradedReesPiece: expected a module over a ClassicalReesAlgebra or ExtendedReesAlgebra.";
@@ -95,4 +125,84 @@ gradedReesPiece(ZZ, Module) := opts -> (n1, M1) -> (
 );
 
 
+--currently not working in this multi-graded setting
+reesModuleToIdeal = method(Options => {MTries=>10, IsGraded=>false, ReturnMap=>false});
+
+reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) -> 
+(--turns a module to an ideal of a ring
+--	S1 := ambient R1;
+	flag := false;
+	answer:=0;
+	if (M2 == 0) then ( --don't work for the zero module	    
+	    answer = ideal(sub(0, R1));
+	    if (o.IsGraded==true) then (		    
+			answer = {answer, degree (sub(1,R1))};
+		);
+		if (o.ReturnMap==true) then (
+		    if (#entries gens M2 == 0) then (
+		        answer = flatten {answer, map(R1^1, M2, sub(matrix{{}}, R1))};
+		    )
+		    else (
+			    answer = flatten {answer, map(R1^1, M2, {apply(#(first entries gens M2), st -> sub(0, R1))})};
+			);
+		);
+
+	    return answer;
+	);
+--	M2 := prune M1;
+--	myMatrix := substitute(relations M2, S1);
+--	s1:=syz transpose substitute(myMatrix,R1);
+--	s2:=entries transpose s1;
+	s2 := entries transpose syz transpose presentation M2;
+	h := null;
+	--first try going down the list
+	i := 0;
+	t := 0;
+	d1 := 0;
+	while ((i < #s2) and (flag == false)) do (
+		t = s2#i;
+		h = map(R1^1, M2**R1, {t});
+		if (isWellDefined(h) == false) then error "internalModuleToIdeal: Something went wrong, the map is not well defined.";
+		if (isInjective(h) == true) then (
+			flag = true;
+			answer = trim ideal(t);
+			if (o.IsGraded==true) then (
+				--print {degree(t#0), (degrees M2)#0};
+				d1 = degree(t#0) - (degrees M2)#0;
+				answer = {answer, d1};
+			);
+			if (o.ReturnMap==true) then (
+				answer = flatten {answer, h};
+			)
+		);
+		i = i+1;
+	);
+	-- if that doesn't work, then try a random combination/embedding
+     i = 0;
+	while ((flag == false) and (i < o.MTries) ) do (
+		coeffRing := coefficientRing(R1);
+        print coeffRing;
+		d := sum(#s2, z -> random(coeffRing, Height=>100000)*(s2#z));
+       -- print d;
+		h = map(R1^1, M2**R1, {d});
+		if (isWellDefined(h) == false) then error "internalModuleToIdeal: Something went wrong, the map is not well defined.";
+		if (isInjective(h) == true) then (
+			flag = true;
+			answer = trim ideal(d);
+			if (o.IsGraded==true) then (
+				d1 = degree(d#0) - (degrees M2)#0;
+				answer = {answer, d1};
+			);
+			if (o.ReturnMap==true) then (
+				answer = flatten {answer, h};
+			)
+		);
+        i = i + 1;
+	);
+	if (flag == false) then error "internalModuleToIdeal: No way found to embed the module into the ring as an ideal, are you sure it can be embedded as an ideal?";
+	answer
+);
+
+
 end--
+
