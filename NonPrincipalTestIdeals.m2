@@ -13,6 +13,7 @@ export{
     "canonicalModule2",
     "reesModuleToIdeal",
     "gradedReesPiece",
+    "testIdealNP",
     "AmbientCanonical",--option
     "ExtendedReesAlgebra",--Type    
 }
@@ -211,6 +212,31 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 	);
 	if (flag == false) then error "internalModuleToIdeal: No way found to embed the module into the ring as an ideal, are you sure it can be embedded as an ideal?";
 	answer
+);
+
+
+testIdealNP = method(Options =>{});
+testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
+    R1 := ring I1;
+    p1 := char R1;
+    if (floor n1 == n1) then (--integer, can use ordinary Rees algebras.  Need to implement that.
+
+    )
+    else if (denominator n1 == p1) then ( --just a hack to try to get things working, we'll need something more general later.
+        S1 := extendedReesAlgebra(I1);
+        tvar := S1#"InverseVariable";
+        omegaS1 := canonicalModule2(S1);        
+        omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+        tauOmegaSList := testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+        tauOmegaS := tauOmegaSList#0;
+        degShift := (omegaS1List#1)#0;
+        answer := gradedReesPiece(degShift, tauOmegaS);
+
+        1/0;
+    )
+    else (
+        error "Not implemented yet";
+    )
 );
 
 

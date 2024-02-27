@@ -1,8 +1,15 @@
 restart
 loadPackage("Divisor", DebuggingMode=>true)
+loadPackage("TestIdeals", DebuggingMode=>true)
 loadPackage "NonPrincipalTestIdeals"
-R = QQ[x,y,z]
-J = ideal(x^2,y,z)
+R = ZZ/7[x,y]
+J = ideal(x,y)
+testIdealNP(6/7, J);
+answer
+break
+testIdealNP(8/7, J);
+answer
+break
 S = extendedReesAlgebra(J)
 describe S
 canonicalModule2 S
