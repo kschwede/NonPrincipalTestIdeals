@@ -217,7 +217,14 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
     p1 := char R1;
     if (floor n1 == n1) then (--integer, can use ordinary Rees algebras.  Need to implement that.
-        S1 := reesIdeal(I1);
+        S0 := (flattenRing(reesAlgebra(I1)))#0;
+        S1#"BaseRing" = R1;
+        S1#"Degree1" = apply(gens ring(reesIdeal I1), z -> sub(z, S1));
+        reesList := first entries mingens I1;
+--        L0 := apply(reesList, h -> sub(h, T2));
+        S2#"OriginalList" = apply(reesList, z->sub(z, S1));
+        S2#"BaseRingList" = reesList;
+        S2#"ReesAlgebra" = true;  
         omegaS1 := canonicalModule2(S1);
         omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
         tauOmegaSList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
