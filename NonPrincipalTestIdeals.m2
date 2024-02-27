@@ -248,9 +248,6 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         answer := gradedReesPiece(degShift, tauOmegaS);
         return answer;
     )
-    else (
-        error "Not implemented yet";
-    )
 );
 
 
