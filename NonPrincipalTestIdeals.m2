@@ -245,7 +245,7 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;
         degShift = (omegaS1List#1)#0;
-        answer := gradedReesPiece(degShift-1, tauOmegaS);
+        answer := gradedReesPiece(degShift, tauOmegaS);
         return answer;
     )
     else (
