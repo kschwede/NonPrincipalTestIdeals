@@ -237,7 +237,7 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         degShift = (omegaS1List#1)#0;
         gradedReesPiece(floor n1, tauOmegaSList#0);
     )
-    else if (denominator n1 == p1) then ( --just a hack to try to get things working, we'll need something more general later.
+    else ( --just a hack to try to get things working, we'll need something more general later.
         S1 = extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
         omegaS1 = canonicalModule2(S1);        

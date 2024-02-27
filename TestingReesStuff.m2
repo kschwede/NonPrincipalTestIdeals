@@ -2,13 +2,13 @@ restart
 loadPackage("Divisor", DebuggingMode=>true)
 loadPackage("TestIdeals", DebuggingMode=>true)
 loadPackage "NonPrincipalTestIdeals"
-R = ZZ/7[x,y]
-J = ideal(x,y)
-testIdealNP(13/7, J)
+R = ZZ/3[x,y]
+J = ideal(x*y,x^2,y^2)
+trim testIdealNP(4/3, J)
 answer
 break
-testIdealNP(15/7, J)
-answer
+testIdealNP(4/3, J)
+answery
 break
 S = extendedReesAlgebra(J)
 describe S
