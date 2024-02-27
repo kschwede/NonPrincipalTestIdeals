@@ -40,7 +40,7 @@ canonicalModule2(Ring) := Module => o->(R1) -> (
             varList = select(varList, z -> ((degree z)#0 >= 0));
             degList = apply(varList, q -> (degree(q)));
             --print degList;
-            degSum = -(sum degList)+1;
+            degSum = -(sum degList)+{1,0};
         )
         else if (#varList > 0) then ( --then there are no variables
             if (#(degree(varList#0)) == 1) then (
