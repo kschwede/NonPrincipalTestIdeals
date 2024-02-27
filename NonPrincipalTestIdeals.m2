@@ -125,9 +125,6 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
             );
             i = i+1;
         )
-        else(
-            --assume a classical rees algebra
-        );
         return tempGens;
     )
     else (
@@ -224,7 +221,8 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         omegaS1 := canonicalModule2(S1);
         omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
         tauOmegaSList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
-        
+        degShift := (omegaS1List#1)#0;
+        gradedReesPiece(floor n1-, tauOmegaSList#0);
     )
     else if (denominator n1 == p1) then ( --just a hack to try to get things working, we'll need something more general later.
         S1 := extendedReesAlgebra(I1);
@@ -234,9 +232,7 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         tauOmegaSList := testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS := tauOmegaSList#0;
         degShift := (omegaS1List#1)#0;
-        answer := gradedReesPiece(degShift, tauOmegaS);
-
-        1/0;
+        answer := gradedReesPiece(degShift-1, tauOmegaS);
     )
     else (
         error "Not implemented yet";
