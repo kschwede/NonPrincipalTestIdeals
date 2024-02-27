@@ -10,7 +10,7 @@ newPackage(
     )
 export{
     "extendedReesAlgebra",
-    "canonicalModule",
+    "canonicalModule2",
     "reesModuleToIdeal",
     "gradedReesPiece",
     "AmbientCanonical",--option
@@ -24,31 +24,41 @@ needsPackage "TestIdeals"
 --load "CanonicalModules.m2"
 
 --the degress need to be fixed to work with extended Rees algebras
-canonicalModule = method(Options=>{AmbientCanonical => null})
-canonicalModule(Ring) := Module => o->(R1) -> (
+canonicalModule2 = method(Options=>{AmbientCanonical => null})
+canonicalModule2(Ring) := Module => o->(R1) -> (
 	S1 := ambient R1;
 	I1 := ideal R1;
 	dR := dim R1;
 	dS := dim S1;
 	varList := first entries vars S1;
 	degList := {};
+    degSum := 0;
     local ambcan;
     if o.AmbientCanonical === null then (
-        if (#varList > 0) then ( --then there are no variables
+        if (R1#?"ExtendedReesAlgebra") and (R1#"ExtendedReesAlgebra") then (
+            varList = select(varList, z -> ((degree z)#0 >= 0));
+            degList = apply(varList, q -> (degree(q)));
+            --print degList;
+            degSum = -(sum degList);
+        )
+        else if (#varList > 0) then ( --then there are no variables
             if (#(degree(varList#0)) == 1) then (
                 degList = apply(varList, q -> (degree(q))#0); )
             else (
                 degList = apply(varList, q -> (degree(q))); );
+            degSum = -(sum degList);
         );
+--        print degList;
+  --      print degSum;
         --print degList;
         --print (-(sum degList));
-        ambcan = S1^{-(sum degList)}; -- these degrees are probably wrong for us, fix it.
+        ambcan = S1^{degSum}; -- these degrees are probably wrong for us, fix it.
     )
     else (
         ambcan = o.AmbientCanonical;
         --print (degrees ambcan);
     );
-	M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))
+	M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
 )
 
 ClassicalReesAlgebra = new Type of QuotientRing
