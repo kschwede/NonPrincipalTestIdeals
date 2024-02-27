@@ -216,29 +216,34 @@ testIdealNP = method(Options =>{});
 testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
     p1 := char R1;
+    local omegaS1;
+    local omegaS1List;
+    local tauOmegaSList;
+    local tauOmegaS;
+    local degShift;
     if (floor n1 == n1) then (--integer, can use ordinary Rees algebras.  Need to implement that.
-        S0 := (flattenRing(reesAlgebra(I1)))#0;
+        S1 := (flattenRing(reesAlgebra(I1)))#0;
         S1#"BaseRing" = R1;
         S1#"Degree1" = apply(gens ring(reesIdeal I1), z -> sub(z, S1));
         reesList := first entries mingens I1;
 --        L0 := apply(reesList, h -> sub(h, T2));
-        S2#"OriginalList" = apply(reesList, z->sub(z, S1));
-        S2#"BaseRingList" = reesList;
-        S2#"ReesAlgebra" = true;  
-        omegaS1 := canonicalModule2(S1);
-        omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
-        tauOmegaSList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
-        degShift := (omegaS1List#1)#0;
-        gradedReesPiece(floor n1-, tauOmegaSList#0);
+        S1#"OriginalList" = apply(reesList, z->sub(z, S1));
+        S1#"BaseRingList" = reesList;
+        S1#"ReesAlgebra" = true;  
+        omegaS1 = canonicalModule2(S1);
+        omegaS1List = reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+        tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+        degShift = (omegaS1List#1)#0;
+        gradedReesPiece(floor n1, tauOmegaSList#0);
     )
     else if (denominator n1 == p1) then ( --just a hack to try to get things working, we'll need something more general later.
         S1 := extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
-        omegaS1 := canonicalModule2(S1);        
-        omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
-        tauOmegaSList := testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
-        tauOmegaS := tauOmegaSList#0;
-        degShift := (omegaS1List#1)#0;
+        omegaS1 = canonicalModule2(S1);        
+        omegaS1List = reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+        tauOmegaS = tauOmegaSList#0;
+        degShift = (omegaS1List#1)#0;
         answer := gradedReesPiece(degShift-1, tauOmegaS);
     )
     else (
