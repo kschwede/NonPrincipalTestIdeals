@@ -40,7 +40,7 @@ canonicalModule2(Ring) := Module => o->(R1) -> (
             varList = select(varList, z -> ((degree z)#0 >= 0));
             degList = apply(varList, q -> (degree(q)));
             --print degList;
-            degSum = -(sum degList);
+            degSum = -(sum degList)+1;
         )
         else if (#varList > 0) then ( --then there are no variables
             if (#(degree(varList#0)) == 1) then (
@@ -124,7 +124,7 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
                 tempGens = tempGens + (ideal(badMap(genList#i)))*(ideal baseGens)^(n1 - degList#i);
             );
             i = i+1;
-        )
+        );
         return tempGens;
     )
     else (

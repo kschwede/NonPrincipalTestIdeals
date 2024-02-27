@@ -4,10 +4,10 @@ loadPackage("TestIdeals", DebuggingMode=>true)
 loadPackage "NonPrincipalTestIdeals"
 R = ZZ/7[x,y]
 J = ideal(x,y)
-testIdealNP(6/7, J);
+testIdealNP(13/7, J);
 answer
 break
-testIdealNP(8/7, J);
+testIdealNP(15/7, J);
 answer
 break
 S = extendedReesAlgebra(J)
