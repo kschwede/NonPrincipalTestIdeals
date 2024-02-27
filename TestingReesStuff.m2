@@ -7,7 +7,7 @@ J = ideal(x,y)
 testIdealNP(13/7, J)
 answer
 break
-testIdealNP(15/7, J);
+testIdealNP(15/7, J)
 answer
 break
 S = extendedReesAlgebra(J)
