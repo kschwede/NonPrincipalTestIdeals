@@ -221,8 +221,9 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     local tauOmegaSList;
     local tauOmegaS;
     local degShift;
+    local S1;
     if (floor n1 == n1) then (--integer, can use ordinary Rees algebras.  Need to implement that.
-        S1 := (flattenRing(reesAlgebra(I1)))#0;
+        S1 = (flattenRing(reesAlgebra(I1)))#0;
         S1#"BaseRing" = R1;
         S1#"Degree1" = apply(gens ring(reesIdeal I1), z -> sub(z, S1));
         reesList := first entries mingens I1;
@@ -237,7 +238,7 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         gradedReesPiece(floor n1, tauOmegaSList#0);
     )
     else if (denominator n1 == p1) then ( --just a hack to try to get things working, we'll need something more general later.
-        S1 := extendedReesAlgebra(I1);
+        S1 = extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
         omegaS1 = canonicalModule2(S1);        
         omegaS1List = reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
