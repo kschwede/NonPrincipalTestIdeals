@@ -104,10 +104,7 @@ gradedReesPiece = method(Options => {});
 
 gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
     S1 := ring J1;
-    if instance(S1, ClassicalReesAlgebra) then (
-
-    )
-    else if (S1#"ExtendedReesAlgebra" == true) then (
+    if (S1#"ExtendedReesAlgebra" == true) then (
         if not isHomogeneous J1 then error "gradedReesPiece:  Expected a homogeneous ideal or a Reese pieces";
         R1 := S1#"BaseRing";
         genList := first entries gens J1;
@@ -127,6 +124,9 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
                 tempGens = tempGens + (ideal(badMap(genList#i)))*(ideal baseGens)^(n1 - degList#i);
             );
             i = i+1;
+        )
+        else(
+            --assume a classical rees algebra
         );
         return tempGens;
     )
@@ -220,7 +220,11 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
     p1 := char R1;
     if (floor n1 == n1) then (--integer, can use ordinary Rees algebras.  Need to implement that.
-
+        S1 := reesIdeal(I1);
+        omegaS1 := canonicalModule2(S1);
+        omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+        tauOmegaSList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+        
     )
     else if (denominator n1 == p1) then ( --just a hack to try to get things working, we'll need something more general later.
         S1 := extendedReesAlgebra(I1);
