@@ -309,6 +309,7 @@ isFJumpingExponentPoly(QQ, Ideal) := opts -> (n1, I1) -> (
     pp := char R1;
     local computedHSLGInitial;
     local computedHSLG;
+    local tauOmegaSList;
     local answer1;
     local answer2;
     local degShift;
@@ -328,7 +329,7 @@ isFJumpingExponentPoly(QQ, Ideal) := opts -> (n1, I1) -> (
     --now we have to run the sigma computation
     ( a1, b1, c1 ) := decomposeFraction( pp, n1, NoZeroC => true );
     if (instance(genList, RingElement)) then (
-        tauOmegaSList := testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal=>omegaS1List#0);
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal => omegaS1List#0);
         computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList } );
         --print "test4";
         computedHSLG = frobeniusRoot(b1, ceiling( ( pp^b1 - 1 )/( pp - 1 ) ), genList, sub(computedHSLGInitial, ambient S1));
@@ -339,10 +340,21 @@ isFJumpingExponentPoly(QQ, Ideal) := opts -> (n1, I1) -> (
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);
         return not(answer1 == answer2);
     )
-    else(
-        --fix this later
+    else if instance(genList, BasicList) then ( -- Karl: I haven't tested this
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => genList, CanonicalIdeal => omegaS1List#0);
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => genList );
+        --print "test4";
+        computedHSLG = frobeniusRoot(b1, apply(#genList, zz -> ceiling( ( pp^b1 - 1 )/( pp - 1 ) )), genList, sub(computedHSLGInitial, ambient S1));
+        --print "test5";
+        tauOmegaS = tauOmegaSList#0;
+        degShift = (omegaS1List#1)#0;
+        answer1 = gradedReesPiece(degShift, tauOmegaS);
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);
+        return not(answer1 == answer2);
     )
 );
+
+--isFPT = method(Options)
 
 end--
 
