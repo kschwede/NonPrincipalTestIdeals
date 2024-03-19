@@ -2,11 +2,17 @@ newPackage(
     "NonPrincipalTestIdeals",
     Version => "0.0",
     Date => "November 1, 2023",
-    Authors => {{Name => "", Email => "", HomePage => ""}},
+    Authors => {{Name => "Rahul Ajit", Email => "", HomePage => ""},
+        {Name => "Matthew Bertucci", Email => "", HomePage => ""}, 
+        {Name => "Trung Chau", Email => "", HomePage => ""}, 
+        {Name => "Karl Schwede", Email => "", HomePage => ""},
+        {Name => "Hunter Simper", Email => "", HomePage => ""}},
     Headline => "",
     Keywords => {},
     DebuggingMode => true,
-    Reload=>true
+    Reload=>true, 
+    PackageImports => {"ReesAlgebra"},
+    PackageExports => {"TestIdeals", "FrobeniusThresholds"}
     )
 export{
     "extendedReesAlgebra",
@@ -14,13 +20,14 @@ export{
     "reesModuleToIdeal",
     "gradedReesPiece",
     "testIdealNP",
+    "isFJumpingExponentPoly",
     "AmbientCanonical",--option
     "ExtendedReesAlgebra",--Type    
 }
 
-needsPackage "ReesAlgebra"
+--needsPackage "ReesAlgebra"
 needsPackage "Divisor"
-needsPackage "TestIdeals"
+--needsPackage "TestIdeals"
 --load "ExtendedReesAlgebra.m2"
 --load "CanonicalModules.m2"
 
@@ -293,6 +300,48 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
 
 testIdealNP(ZZ, Ideal) := opts -> (n1, I1) -> (
     testIdealNP(n1/1, I1, opts) 
+);
+
+isFJumpingExponentPoly = method(Options =>{});
+
+isFJumpingExponentPoly(QQ, Ideal) := opts -> (n1, I1) -> (
+    R1 := ring I1;
+    pp := char R1;
+    local computedHSLGInitial;
+    local computedHSLG;
+    local answer1;
+    local answer2;
+    local degShift;
+    local tauOmegaS;
+    S1 := extendedReesAlgebra(I1);
+    --print "testing";
+    tvar := S1#"InverseVariable";
+    omegaS1 := canonicalModule2(S1);
+    --print "test1";
+    omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+    --print "test2";
+    baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+    --print "test3";
+    baseTau := baseTauList#0;
+    genList := baseTauList#2;
+
+    --now we have to run the sigma computation
+    ( a1, b1, c1 ) := decomposeFraction( pp, n1, NoZeroC => true );
+    if (instance(genList, RingElement)) then (
+        tauOmegaSList := testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal=>omegaS1List#0);
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList } );
+        --print "test4";
+        computedHSLG = frobeniusRoot(b1, ceiling( ( pp^b1 - 1 )/( pp - 1 ) ), genList, sub(computedHSLGInitial, ambient S1));
+        --print "test5";
+        tauOmegaS = tauOmegaSList#0;
+        degShift = (omegaS1List#1)#0;
+        answer1 = gradedReesPiece(degShift, tauOmegaS);
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);
+        return not(answer1 == answer2);
+    )
+    else(
+        --fix this later
+    )
 );
 
 end--
