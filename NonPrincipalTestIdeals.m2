@@ -10,9 +10,8 @@ newPackage(
     Headline => "",
     Keywords => {},
     DebuggingMode => true,
-    Reload=>true, 
-    PackageImports => {"ReesAlgebra"},
-    PackageExports => {"TestIdeals", "FrobeniusThresholds"}
+    Reload=>true,     
+    PackageExports => {"Divisor", "TestIdeals", "FrobeniusThresholds", "ReesAlgebra"}
     )
 export{
     "extendedReesAlgebra",
@@ -79,7 +78,7 @@ getValidVarName = method();
 getValidVarName(Ring) := (R1) -> (
     --this should be smarter, not sure the right way to do it.  This ougt to work for now.
     s1 := toList("abcdefghijklmnopqrstuvwxyz");
-    s1#(random (#s1))
+    (s1#(random (#s1))) | (s1#(random (#s1)))
 )
 
 extendedReesAlgebra = method(Options => {});
@@ -434,6 +433,87 @@ isFPT(QQ, Ideal) := opts -> (n1, I1) -> (
     error "isFPT (non-principal case): something went wrong with the generator list for the Fedder colon";
 );
 
+
+
+TEST /// --check #0, monomial ideals, dimension 2
+    loadPackage "MultiplierIdeals";
+    S = QQ[a,b];
+    J = monomialIdeal(a^2,b^3);
+    J1 = multiplierIdeal(J, 5/4);
+    J2 = multiplierIdeal(J, 5/6);
+    J3 = multiplierIdeal(J, 13/12);
+    R = ZZ/5[x,y];
+    I = ideal(x^2,y^3);
+    I1 = testIdealNP(5/4, I);
+    I2 = testIdealNP(5/6, I);
+    I3 = testIdealNP(13/12, I);
+    phi = map(S, R, {a,b});
+    assert(phi(I1)==J1);
+    assert(phi(I2)==J2);
+    assert(phi(I3)==J3);
+    assert(I1*I == testIdealNP(9/4, I));--testing Skoda
+///
+
+TEST /// --check #1, monomial ideals, dimension 3
+    loadPackage "MultiplierIdeals";
+    S = QQ[a,b,c];
+    J = monomialIdeal(a^2,b^3,c^4);
+    J1 = multiplierIdeal(J, 5/4);
+    J2 = multiplierIdeal(J, 13/12);
+    J3 = multiplierIdeal(J, 21/10);
+    R = ZZ/7[x,y,z];
+    I = ideal(x^2,y^3,z^4);
+    I1 = testIdealNP(5/4, I);
+    I2 = testIdealNP(13/12, I);
+    I3 = testIdealNP(21/10, I);
+    phi = map(S, R, {a,b,c});
+    assert(phi(I1)==J1);
+    assert(phi(I2)==J2);
+    assert(phi(I3)==J3);
+///
+
+TEST /// --check #2, monomial ideals, dimension 4
+    loadPackage "MultiplierIdeals";
+    S = QQ[a,b,c,d];
+    J = monomialIdeal(a^3,b^2*c,c^3,d^3*c^2);
+    J1 = multiplierIdeal(J, 2/3);
+    J2 = multiplierIdeal(J, 5/4);
+    J3 = multiplierIdeal(J, 11/8);
+    R = ZZ/3[x,y,z,w];
+    I = ideal(x^3,y^2*z,z^3,w^3*z^2);
+    I1 = testIdealNP(2/3, I);
+    I2 = testIdealNP(5/4, I);
+    I3 = testIdealNP(11/8, I); 
+    phi = map(S, R, {a,b,c,d});
+    assert(phi(I1)==J1);
+    assert(phi(I2)==J2);
+    assert(phi(I3)==J3);
+///
+
+TEST /// --check #3, non-monomial ideals, dimension 3
+    --there is no reason these should exist in general, but they seem to in this case
+    needsPackage "Dmodules";
+    S = QQ[a,b,c];
+    J = ideal(a^2+b^2,b^3,c^2+a^2);    
+    J2 =  multiplierIdeal(J, 3/2);
+    J3 =  multiplierIdeal(J, 7/5);
+    R = ZZ/5[x,y,z];
+    I = ideal(x^2+y^2, y^3, z^2+x^2);    
+    I2 =  testIdealNP(3/2, I);
+    I3 =  testIdealNP(7/5, I);
+    phi = map(S, R, {a,b,c});    
+    assert(phi(I2) == J2);
+    assert(sub(phi(I3), S) == J3);
+///
+
+TEST /// --check #4, ambient singular ring, dimension 2
+    R = ZZ/2[x,y,z]/ideal(x^2-y*z);
+    J = ideal(x,y,z);
+    m = ideal(x,y,z);
+    uI = ideal(sub(1,R));
+    assert(testIdealNP(10/11, J) == uI);
+    assert(testIdealNP(1/1, J) == m);    
+///
 
 end--
 
