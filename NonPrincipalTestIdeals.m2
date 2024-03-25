@@ -20,7 +20,7 @@ export{
     "reesModuleToIdeal",
     "gradedReesPiece",
     "testIdealNP",
-    "isFJumpingExponentPoly",
+    "isFJumpingExponentNP",
     "AmbientCanonical",--option
     "ExtendedReesAlgebra",--Type    
 }
@@ -142,6 +142,7 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
     local i;
     if (S1#?"ExtendedReesAlgebra") and (S1#"ExtendedReesAlgebra" == true) then (
         if not isHomogeneous J1 then error "gradedReesPiece:  Expected a homogeneous ideal or a Reese pieces";
+        --something is not working right, we should remove this error, and then debug
         badMap = map(R1, S1, (gens R1) | baseGens | {1}); --this is not well defined, but it should do the job.
         i = 0;
         while (i < #genList) do (
@@ -269,7 +270,9 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     local degShift;
     local S1;
     local answer;
-    if (floor n1 == n1) then (--integer, can use ordinary Rees algebras.  Need to implement that.
+    if (floor n1 == n1-2) then (
+        --I turned this off for now.  
+        --integer, can use ordinary Rees algebras.  Need to implement that.
         --S1 = (flattenRing(reesAlgebra(I1)))#0;
         --S1#"BaseRing" = R1;
         --S1#"Degree1" = apply(gens ring(reesIdeal I1), z -> sub(z, S1));
@@ -288,11 +291,14 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     else ( --we do the extended Rees algebra thing
         S1 = extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
-        omegaS1 = canonicalModule2(S1);        
+        omegaS1 = prune canonicalModule2(S1);  
+        --print omegaS1;      
         omegaS1List = reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;
+        --print tauOmegaS;
         degShift = (omegaS1List#1)#0;
+        --print degShift;
         answer = gradedReesPiece(degShift, tauOmegaS);
     );
     trim answer
@@ -302,9 +308,9 @@ testIdealNP(ZZ, Ideal) := opts -> (n1, I1) -> (
     testIdealNP(n1/1, I1, opts) 
 );
 
-isFJumpingExponentPoly = method(Options =>{});
+isFJumpingExponentNP = method(Options =>{});
 
-isFJumpingExponentPoly(QQ, Ideal) := opts -> (n1, I1) -> (
+isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
     pp := char R1;
     local computedHSLGInitial;
