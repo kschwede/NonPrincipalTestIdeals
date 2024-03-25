@@ -27,6 +27,7 @@ J2 = ideal(a^3+b^3,b^4,c^2)
 elapsedTime multiplierIdeal(J2, 8/5)
 
 
+
 restart
 loadPackage "NonPrincipalTestIdeals";
 needsPackage "Dmodules"
@@ -41,6 +42,12 @@ isFPT(28/27,I)
 S = QQ[a,b,c]/ideal(a^2-b*c)
 J = ideal(a,b,c)
 elapsedTime multiplierIdeal(J, 1)
+
+use R
+I2 = ideal(x^2+y^3, y^4+ z^2)
+tau1 = elapsedTime testIdealNP(1/1, I2)
+tau2 = elapsedTime testIdealNP(2, I2)
+tau1*I2 == tau2 --checking Skoda
 
 
 -------------------------------------

@@ -87,7 +87,13 @@ extendedReesAlgebra = method(Options => {});
 extendedReesAlgebra(Ideal) := opts->(J1) -> (    
     if any (degrees ring J1, ll -> #ll > 1) then error "extendedReesAlgebra: currently only works for singly graded ambient rings";
     I1 := reesIdeal(J1, Variable=>getValidVarName(ring J1));
-    degList := apply( (degrees ring J1), j->{0,sum j} ) | (degrees ring I1) | {{-1,0}};
+    local degList;
+    if isHomogeneous J1 then ( 
+        degList = apply( (degrees ring J1), j->{0,sum j} ) | (degrees ring I1) | {{-1,0}};
+    )
+    else(
+        degList = apply( (degrees ring J1), j->{0,0} ) | apply(degrees ring I1, j->{1,0}) | {{-1,0}};
+    );
 --    print degList;
     ti := getSymbol "ti";
     T2 := (coefficientRing ring(J1))[ (gens ring J1)|(gens ring I1)|{ti}, Degrees=>degList];
