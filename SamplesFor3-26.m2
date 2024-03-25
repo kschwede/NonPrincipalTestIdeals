@@ -33,6 +33,7 @@ needsPackage "Dmodules"
 R = ZZ/3[x,y,z]/ideal(x^2-y*z)
 I = ideal(x,y,z)
 elapsedTime testIdealNP(1/1, I)
+elapsedTime testIdealNP(26/27, I)
 isFPT(1/1, I)
 isFPT(6/7, I)
 isFPT(28/27,I)
@@ -41,3 +42,30 @@ S = QQ[a,b,c]/ideal(a^2-b*c)
 J = ideal(a,b,c)
 elapsedTime multiplierIdeal(J, 1)
 
+
+-------------------------------------
+--IGNORE THIS, DEBUGGING
+--------------------------------------
+
+restart
+loadPackage "Dmodules";
+loadPackage "NonPrincipalTestIdeals";
+R = ZZ/5[x,y,z]
+I2 = ideal(x^2+y^3, y^4, z^2)
+T2 = extendedReesAlgebra(I2);
+omegaT2 = prune canonicalModule2(T2);
+omegaList = reesModuleToIdeal(T2, omegaT2, Homogeneous=>true, Map => true);
+
+use R
+I3 = ideal(x^3+y^3, y^4, z^2)
+T3 = extendedReesAlgebra(I3);
+omegaT3 = prune canonicalModule2(T3);
+omegaList3 = reesModuleToIdeal(T3, omegaT3, Homogeneous=>true, Map => true);
+
+
+
+trim elapsedTime testIdealNP(8/5, I3)
+
+
+I3 = ideal(x^3+y^3, y^4, z^2)
+trim elapsedTime testIdealNP(8/5, I3)

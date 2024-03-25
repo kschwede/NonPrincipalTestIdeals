@@ -21,8 +21,11 @@ export{
     "gradedReesPiece",
     "testIdealNP",
     "isFJumpingExponentNP",
+    --"IsGraded",
     "AmbientCanonical",--option
     "ExtendedReesAlgebra",--Type    
+    --"ReturnMap",
+    "Map",
 }
 
 --needsPackage "ReesAlgebra"
@@ -141,7 +144,7 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
     local badMap;
     local i;
     if (S1#?"ExtendedReesAlgebra") and (S1#"ExtendedReesAlgebra" == true) then (
-        if not isHomogeneous J1 then error "gradedReesPiece:  Expected a homogeneous ideal or a Reese pieces";
+        --if not isHomogeneous J1 then error "gradedReesPiece:  Expected a homogeneous ideal or a Reese pieces";
         --something is not working right, we should remove this error, and then debug
         badMap = map(R1, S1, (gens R1) | baseGens | {1}); --this is not well defined, but it should do the job.
         i = 0;
@@ -181,7 +184,7 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
 
 
 --currently not working in this multi-graded setting
-reesModuleToIdeal = method(Options => {MTries=>10, IsGraded=>false, ReturnMap=>false});
+reesModuleToIdeal = method(Options => {MTries=>10, Homogeneous=>false, Map=>false});
 
 reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) -> 
 (--turns a module to an ideal of a ring
@@ -190,7 +193,7 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 	answer:=0;
 	if (M2 == 0) then ( --don't work for the zero module	    
 	    answer = ideal(sub(0, R1));
-	    if (o.IsGraded==true) then (		    
+	    if (o.Homogeneous==true) then (		    
 			answer = {answer, degree (sub(1,R1))};
 		);
 		if (o.ReturnMap==true) then (
@@ -221,15 +224,16 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 		if (isInjective(h) == true) then (
 			flag = true;
 			answer = trim ideal(t);
-			if (o.IsGraded==true) then (
+			if (o.Homogeneous==true) then (
 				--print {degree(t#0), (degrees M2)#0};
 				d1 = degree(t#0) - (degrees M2)#0;
 				answer = {answer, d1};
 			);
-			if (o.ReturnMap==true) then (
+			if (o.Map==true) then (
 				answer = flatten {answer, h};
 			)
-		);
+		)
+        else (print "warning");
 		i = i+1;
 	);
 	-- if that doesn't work, then try a random combination/embedding
@@ -244,11 +248,11 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 		if (isInjective(h) == true) then (
 			flag = true;
 			answer = trim ideal(d);
-			if (o.IsGraded==true) then (
+			if (o.Homogeneous==true) then (
 				d1 = degree(d#0) - (degrees M2)#0;
 				answer = {answer, d1};
 			);
-			if (o.ReturnMap==true) then (
+			if (o.Map==true) then (
 				answer = flatten {answer, h};
 			)
 		);
@@ -283,7 +287,7 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         --S1#"ReesAlgebra" = true;
         S1 = classicalReesAlgebra(I1);  
         omegaS1 = canonicalModule2(S1);
-        omegaS1List = reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+        omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
         tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         degShift = (omegaS1List#1)#0;
         answer = gradedReesPiece(degShift + floor n1, tauOmegaSList#0);
@@ -293,7 +297,10 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         tvar := S1#"InverseVariable";
         omegaS1 = prune canonicalModule2(S1);  
         --print omegaS1;      
-        omegaS1List = reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+        omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+        --degShift = (omegaS1List#1)#0;
+        --answer = gradedReesPiece(degShift, omegaS1List#0);
+        --1/0;
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;
         --print tauOmegaS;
@@ -324,7 +331,7 @@ isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
     tvar := S1#"InverseVariable";
     omegaS1 := canonicalModule2(S1);
     --print "test1";
-    omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+    omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
     if not (gradedReesPiece(degShift, omegaS1List#0) == ideal(sub(1, R1))) then error "isFJumpingExponent (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
     --print "test2";
@@ -380,7 +387,7 @@ isFPT(QQ, Ideal) := opts -> (n1, I1) -> (
     tvar := S1#"InverseVariable";
     omegaS1 := canonicalModule2(S1);
     --print "test1";
-    omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+    omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
     targetAnswer := gradedReesPiece(degShift, omegaS1List#0);
     if not (targetAnswer == ideal(sub(1, R1))) then error "isFPT (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
