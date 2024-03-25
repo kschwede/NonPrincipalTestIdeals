@@ -49,6 +49,14 @@ tau1 = elapsedTime testIdealNP(1/1, I2)
 tau2 = elapsedTime testIdealNP(2, I2)
 tau1*I2 == tau2 --checking Skoda
 
+restart
+loadPackage "NonPrincipalTestIdeals"; --this is an E6 singularity, the FPT should be 1/3-1/30 according to Takagi-Watanabe
+    R = ZZ/5[x,y,z]/ideal(x^2+y^3+z^4);
+    J = ideal(x,y,z); 
+    elapsedTime testIdealNP(1/3-1/27, J)
+    elapsedTime testIdealNP(1/3-1/30, J)
+    elapsedTime isFPT(1/3-1/30, J)
+
 
 -------------------------------------
 --IGNORE THIS, DEBUGGING
