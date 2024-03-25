@@ -315,9 +315,9 @@ isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
     pp := char R1;
     local computedHSLGInitial;
     local computedHSLG;
+    local tauOmegaSList;
     local answer1;
-    local answer2;
-    local degShift;
+    local answer2;    
     local tauOmegaS;
     S1 := extendedReesAlgebra(I1);
     --print "testing";
@@ -325,6 +325,8 @@ isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
     omegaS1 := canonicalModule2(S1);
     --print "test1";
     omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+    degShift := (omegaS1List#1)#0;
+    if not (gradedReesPiece(degShift, omegaS1List#0) == ideal(sub(1, R1))) then error "isFJumpingExponent (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
     --print "test2";
     baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
     --print "test3";
@@ -334,21 +336,91 @@ isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
     --now we have to run the sigma computation
     ( a1, b1, c1 ) := decomposeFraction( pp, n1, NoZeroC => true );
     if (instance(genList, RingElement)) then (
-        tauOmegaSList := testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal=>omegaS1List#0);
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal => omegaS1List#0);
         computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList } );
         --print "test4";
         computedHSLG = frobeniusRoot(b1, ceiling( ( pp^b1 - 1 )/( pp - 1 ) ), genList, sub(computedHSLGInitial, ambient S1));
         --print "test5";
-        tauOmegaS = tauOmegaSList#0;
-        degShift = (omegaS1List#1)#0;
+        tauOmegaS = tauOmegaSList#0;        
         answer1 = gradedReesPiece(degShift, tauOmegaS);
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);
         return not(answer1 == answer2);
     )
-    else(
-        --fix this later
-    )
+    else if instance(genList, BasicList) then ( -- Karl: I haven't tested this
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => genList, CanonicalIdeal => omegaS1List#0);
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => genList );
+        --print "test4";
+        computedHSLG = frobeniusRoot(b1, apply(#genList, zz -> ceiling( ( pp^b1 - 1 )/( pp - 1 ) )), genList, sub(computedHSLGInitial, ambient S1));
+        --print "test5";
+        tauOmegaS = tauOmegaSList#0;        
+        answer1 = gradedReesPiece(degShift, tauOmegaS);
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);
+        return not(answer1 == answer2);
+    );
+    error "isFJumpingExponent (non-principal case): something went wrong with the generator list for the Fedder colon";
 );
+
+isFJumpingExponent(ZZ, Ideal) := opts -> (n1, I1) -> (
+    isFJumpingExponent(n1/1, I1)
+);
+
+--isFPT = method(Options)
+
+isFPT(QQ, Ideal) := opts -> (n1, I1) -> (
+     R1 := ring I1;
+    pp := char R1;
+    local computedHSLGInitial;
+    local computedHSLG;
+    local tauOmegaSList;
+    local answer1;
+    local answer2;    
+    local tauOmegaS;
+    S1 := extendedReesAlgebra(I1);
+    --print "testing";
+    tvar := S1#"InverseVariable";
+    omegaS1 := canonicalModule2(S1);
+    --print "test1";
+    omegaS1List := reesModuleToIdeal(S1, omegaS1, IsGraded=>true, ReturnMap => true);
+    degShift := (omegaS1List#1)#0;
+    targetAnswer := gradedReesPiece(degShift, omegaS1List#0);
+    if not (targetAnswer == ideal(sub(1, R1))) then error "isFPT (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
+    --print "test2";
+    baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+    --print "test3";
+    baseTau := baseTauList#0;
+    genList := baseTauList#2;
+
+    --now we have to run the sigma computation
+    ( a1, b1, c1 ) := decomposeFraction( pp, n1, NoZeroC => true );
+    if (instance(genList, RingElement)) then (
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal => omegaS1List#0);
+        tauOmegaS = tauOmegaSList#0;        
+        answer1 = gradedReesPiece(degShift, tauOmegaS);
+        if (targetAnswer == answer1) then return false; --we didn't hit the FPT
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList } );
+        --print "test4";
+        computedHSLG = frobeniusRoot(b1, ceiling( ( pp^b1 - 1 )/( pp - 1 ) ), genList, sub(computedHSLGInitial, ambient S1));
+        --print "test5";
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);
+        if not (targetAnswer == answer2) then return false; --we went past the fpt
+        return true;
+    )
+    else if instance(genList, BasicList) then ( -- Karl: I haven't tested this
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => genList, CanonicalIdeal => omegaS1List#0);
+        tauOmegaS = tauOmegaSList#0;        
+        answer1 = gradedReesPiece(degShift, tauOmegaS);
+        if (targetAnswer == answer1) then return false; --we didn't hit the FPT
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => genList );
+        --print "test4";
+        computedHSLG = frobeniusRoot(b1, apply(#genList, zz -> ceiling( ( pp^b1 - 1 )/( pp - 1 ) )), genList, sub(computedHSLGInitial, ambient S1));
+        --print "test5";        
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);
+        if not (targetAnswer == answer2) then return false; --we went past the fpt
+        return not(answer1 == answer2);
+    );
+    error "isFPT (non-principal case): something went wrong with the generator list for the Fedder colon";
+);
+
 
 end--
 
