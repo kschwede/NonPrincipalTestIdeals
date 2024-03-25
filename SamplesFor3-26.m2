@@ -28,7 +28,16 @@ elapsedTime multiplierIdeal(J2, 8/5)
 
 
 restart
+loadPackage "NonPrincipalTestIdeals";
+needsPackage "Dmodules"
 R = ZZ/3[x,y,z]/ideal(x^2-y*z)
+I = ideal(x,y,z)
+elapsedTime testIdealNP(1/1, I)
+isFPT(1/1, I)
+isFPT(6/7, I)
+isFPT(28/27,I)
 
-R = 
+S = QQ[a,b,c]/ideal(a^2-b*c)
+J = ideal(a,b,c)
+elapsedTime multiplierIdeal(J, 1)
 
