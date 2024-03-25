@@ -491,7 +491,7 @@ TEST /// --check #2, monomial ideals, dimension 4
 ///
 
 TEST /// --check #3, non-monomial ideals, dimension 3
-    --there is no reason these should exist in general, but they seem to in this case
+    --there is no reason these should agree in general, but they seem to in this case
     needsPackage "Dmodules";
     S = QQ[a,b,c];
     J = ideal(a^2+b^2,b^3,c^2+a^2);    
@@ -506,13 +506,31 @@ TEST /// --check #3, non-monomial ideals, dimension 3
     assert(sub(phi(I3), S) == J3);
 ///
 
-TEST /// --check #4, ambient singular ring, dimension 2
+TEST /// --check #4, ambient singular ring, dimension 2, A1 singularity
     R = ZZ/2[x,y,z]/ideal(x^2-y*z);
     J = ideal(x,y,z);
     m = ideal(x,y,z);
     uI = ideal(sub(1,R));
     assert(testIdealNP(10/11, J) == uI);
     assert(testIdealNP(1/1, J) == m);    
+///
+
+TEST /// --check #5, ambient singular ring, dimension 2, E6 singularity (see [TW, Example 2.5])
+    R = ZZ/5[x,y,z]/ideal(x^2+y^3+z^4);
+    J = ideal(x,y,z);
+    m = ideal(x,y,z);
+    uI = ideal(sub(1,R));    
+    assert(testIdealNP(1/3-1/27, J) == uI);
+    assert(testIdealNP(1/3-1/30, J) == m);    
+///
+
+TEST /// --check #6, ambient singular ring, dimension 2, E7 singularity (see [TW, Example 2.5])
+    R = ZZ/5[x,y,z]/ideal(x^2+y^3+y*z^3);
+    J = ideal(x,y,z);
+    m = ideal(x,y,z);
+    uI = ideal(sub(1,R));    
+    assert(testIdealNP(1/5, J) == uI);
+    assert(testIdealNP(1/4, J) == m);    
 ///
 
 end--
