@@ -533,5 +533,46 @@ TEST /// --check #6, ambient singular ring, dimension 2, E7 singularity (see [TW
     assert(testIdealNP(1/4, J) == m);    
 ///
 
+TEST /// --check #7, dim 4, codim 2 ideal (non-m-primary)
+    R = ZZ/2[x,y,z,w];
+    J = (ideal(x,y))*(ideal(z,w))*(ideal(x,w));
+    J1 = testIdealNP(3/2, J);
+    J2 = testIdealNP(2/1, J);
+    J3 = testIdealNP(11/8, J);
+    loadPackage "MultiplierIdeals";
+    S = QQ[a,b,c,d];
+    I = (monomialIdeal(a,b))*(monomialIdeal(c,d))*(monomialIdeal(a,d));
+    I1 = ideal multiplierIdeal(I,  3/2);
+    I2 = ideal multiplierIdeal(I,  2/1);
+    I3 = ideal multiplierIdeal(I, 11/8);
+    phi = map(S, R, {a,b,c,d});
+    assert(phi(J1)==I1);
+    assert(phi(J2)==I2);
+    assert(phi(J3)==I3);
+///
+
+TEST /// --check #8, dim 4, mixed ideal
+    R = ZZ/2[x,y,z,w];
+    J = (ideal(x^2,y))*(ideal(y^2,z,w^2));
+    J1 = testIdealNP(3/2, J);
+    J2 = testIdealNP(2/1, J);
+    loadPackage "MultiplierIdeals";
+    S = QQ[a,b,c,d];
+    I = (monomialIdeal(a^2,b))*(monomialIdeal(b^2,c,d^2));
+    I1 = ideal multiplierIdeal(I, 3/2);
+    I2 = ideal multiplierIdeal(I, 2/1);
+    phi = map(S, R, {a,b,c,d});
+    assert(phi(J1)==I1);
+    assert(phi(J2)==I2);
+///
+
+TEST /// --check #9, interesting toric construction, 
+    R = ZZ/3[x,y,z]/ideal(x^2-y*z);
+    J = (ideal(x,z))*(ideal(x,y,z));
+    assert(not isFPT(1/3, J));
+    assert(isFPT(1/2, J));
+    assert(testIdealNP(1/1, J) == (ideal(x,z))*(ideal(x,y,z)));
+///
+
 end--
 
