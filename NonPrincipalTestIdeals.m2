@@ -569,9 +569,12 @@ TEST /// --check #8, dim 4, mixed ideal
 TEST /// --check #9, interesting toric construction, 
     R = ZZ/3[x,y,z]/ideal(x^2-y*z);
     J = (ideal(x,z))*(ideal(x,y,z));
+    I = (ideal(x,z));
+    I1 = (ideal(z));
     assert(not isFPT(1/3, J));
     assert(isFPT(1/2, J));
-    assert(testIdealNP(1/1, J) == sub((ideal(x,z))*(ideal(x,y,z)),R));
+    assert(sub(testIdealNP(1/1, J), R) == sub((ideal(x,z))*(ideal(x,y,z)),R));
+    assert(sub(testIdealNP(1/1, I), R) == testIdealNP(1/2, I1));
 ///
 
 end--
