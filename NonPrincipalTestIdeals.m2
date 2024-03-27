@@ -571,7 +571,7 @@ TEST /// --check #9, interesting toric construction,
     J = (ideal(x,z))*(ideal(x,y,z));
     assert(not isFPT(1/3, J));
     assert(isFPT(1/2, J));
-    assert(testIdealNP(1/1, J) == (ideal(x,z))*(ideal(x,y,z)));
+    assert(testIdealNP(1/1, J) == sub((ideal(x,z))*(ideal(x,y,z)),R));
 ///
 
 end--
