@@ -1,7 +1,7 @@
 restart
 loadPackage "NonPrincipalTestIdeals";
 loadPackage "MultiplierIdeals";
-
+debugLevel = 1
 R = ZZ/5[x,y,z]
 I = ideal(x^2,y^3,z^4)
 elapsedTime testIdealNP(5/4, I)

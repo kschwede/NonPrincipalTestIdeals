@@ -23,6 +23,7 @@ export{
     --"IsGraded",
     "AmbientCanonical",--option
     "ExtendedReesAlgebra",--Type    
+    "ForceExtendedRees", --option
     --"ReturnMap",
     "Map",
 }
@@ -116,18 +117,34 @@ classicalReesAlgebra = method(Options => {});
 
 classicalReesAlgebra(Ideal) := opts -> (J1) -> (
     if any (degrees ring J1, ll -> #ll > 1) then error "classicalReesAlgebra: currently only works for singly graded ambient rings";
---    I1 := reesIdeal(J1, Variable=>getValidVarName(ring J1));
-    Rees2 := reesAlgebra J1;
+    --Rees2 := reesAlgebra J1;
 --    degList := apply( (degrees ring J1), j->{0,sum j} ) | (degrees ring I1);
 --    print degList;
 --    T2 := (coefficientRing ring(J1))[ (gens ring J1)|(gens ring I1), Degrees=>degList];
     --ti = last gens T2;
     --T2 = ambient reesAlgebra J1; 
     --S2 := T2/(sub(I1, T2));    
+    --reesList := first entries mingens J1;
+    --S2 := (flattenRing Rees2)#0;--:= T2/((sub(ideal ring J1, T2) + sub(I1, T2) + ideal( apply(#(gens ring I1), j -> ti*(L1#j) - (L0#j)))));
+    I1 := reesIdeal(J1, Variable=>getValidVarName(ring J1));
+    local degList;
+    if isHomogeneous J1 then ( 
+        degList = apply( (degrees ring J1), j->{0,sum j} ) | (degrees ring I1) ;
+    )
+    else(
+        degList = apply( (degrees ring J1), j->{0,0} ) | apply(degrees ring I1, j->{1,0});
+    );
+--    print degList;
+    T2 := (coefficientRing ring(J1))[ (gens ring J1)|(gens ring I1), Degrees=>degList];
+    --T2 = ambient reesAlgebra J1; 
+    --S2 := T2/(sub(I1, T2));    
+    L1 := apply(gens ring I1, u -> sub(u, T2));
     reesList := first entries mingens J1;
-    S2 := (flattenRing Rees2)#0;--:= T2/((sub(ideal ring J1, T2) + sub(I1, T2) + ideal( apply(#(gens ring I1), j -> ti*(L1#j) - (L0#j)))));
+    L0 := apply(reesList, h -> sub(h, T2));
+    S2 := T2/((sub(ideal ring J1, T2) + sub(I1, T2)));
+
     S2#"BaseRing" = ring J1;
-    S2#"Degree1" = apply(gens Rees2, z -> sub(z, S2));
+    S2#"Degree1" = apply(gens ring(I1), z -> sub(z, S2));
     S2#"OriginalList" = apply(reesList, z->sub(z, S2));
     S2#"BaseRingList" = reesList;
     S2#"ClassicalReesAlgebra" = true;    
@@ -169,15 +186,17 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
     )
     else if (S1#?"ClassicalReesAlgebra") and (S1#"ClassicalReesAlgebra" == true) then (
         if not isHomogeneous J1 then error "gradedReesPiece:  Expected a homogeneous ideal or a Reese pieces";
-        badMap = map(R1, S1,  baseGens | (gens R1) ); --this is not well defined, but it should do the job.
+        badMap = map(R1, S1,  (gens R1) | baseGens ); --this is not well defined, but it should do the job.
         i = 0;
         while (i < #genList) do (
+            if debugLevel >= 1 then print ("gradedReesPiece: classical, looking at " | toString(genList#i));
             if (degList#i == n1) then (
                 tempGens = tempGens + ideal(badMap(genList#i));
             )
             else if (degList#i < n1) then (
                 tempGens = tempGens + (ideal(badMap(genList#i)))*(ideal baseGens)^(n1 - degList#i);
             );
+            if debugLevel >= 1 then print ("gradedReesPiece: classical:" | toString())
             i = i+1;
         );
         return tempGens;
@@ -267,7 +286,7 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 	answer
 );
 
-testModuleNP = method(Options => {});
+testModuleNP = method(Options => {AssumeDomain => false, FrobeniusRootStrategy => Substitution});
 testModuleNP(QQ, Ideal) := opts -> (n1, I1) -> (
     --THIS IS UNDER CONSTRUCTION
     R1 := ring I1;
@@ -296,18 +315,18 @@ testModuleNP(QQ, Ideal) := opts -> (n1, I1) -> (
         --degShift = (omegaS1List#1)#0;
         --answer = gradedReesPiece(degShift, omegaS1List#0);
         --1/0;
-        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>opts.AssumeDomain, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;
         --print tauOmegaS;
         degShift = (omegaS1List#1)#0;
         --print degShift;
         answer = gradedReesPiece(degShift, tauOmegaS);
     );
-    trim answer
+    (trim answer, gradedReesPiece(degShift, omegaS1List#0))
 );
 
 
-testIdealNP = method(Options =>{});
+testIdealNP = method(Options =>{ForceExtendedRees => false });
 testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
     p1 := char R1;
@@ -318,7 +337,8 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     local degShift;
     local S1;
     local answer;
-    if (floor n1 == n1-2) then (
+    if (floor n1 == n1) and (opts.ForceExtendedRees == false) then (
+        if (debugLevel >= 1) then print "testIdealNP: Using ordinary Rees algebra";
         --I turned this off for now.  
         --integer, can use ordinary Rees algebras.  Need to implement that.
         --S1 = (flattenRing(reesAlgebra(I1)))#0;
@@ -332,11 +352,15 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         S1 = classicalReesAlgebra(I1);  
         omegaS1 = canonicalModule2(S1);
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+        
         tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         degShift = (omegaS1List#1)#0;
+        if (debugLevel >= 1) then print ("testIdealNP: degShift " | toString(degShift));
+        1/0;
         answer = gradedReesPiece(degShift + floor n1, tauOmegaSList#0);
     )
     else ( --we do the extended Rees algebra thing
+        if (debugLevel >= 1) then print "testIdealNP: Using extended Rees algebra";
         S1 = extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
         omegaS1 = prune canonicalModule2(S1);  
@@ -349,7 +373,9 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         tauOmegaS = tauOmegaSList#0;
         --print tauOmegaS;
         degShift = (omegaS1List#1)#0;
+        if (debugLevel >= 1) then print ("testIdealNP: degShift " | toString(degShift));
         --print degShift;
+        1/0;
         answer = gradedReesPiece(degShift, tauOmegaS);
     );
     trim answer
@@ -377,7 +403,7 @@ isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
     --print "test1";
     omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
-    if not (gradedReesPiece(degShift, omegaS1List#0) == ideal(sub(1, R1))) then error "isFJumpingExponent (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
+--    if not (gradedReesPiece(degShift, omegaS1List#0) == ideal(sub(1, R1))) then error "isFJumpingExponent (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
     --print "test2";
     baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
     --print "test3";
