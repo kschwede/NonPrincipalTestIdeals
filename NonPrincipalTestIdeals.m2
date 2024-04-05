@@ -20,6 +20,7 @@ export{
     "gradedReesPiece",
     "testIdealNP",
     "isFJumpingExponentNP",
+    "classicalReesAlgebra",
     --"IsGraded",
     "AmbientCanonical",--option
     "ExtendedReesAlgebra",--Type    
@@ -59,8 +60,8 @@ canonicalModule2(Ring) := Module => o->(R1) -> (
                 degList = apply(varList, q -> (degree(q))); );
             degSum = -(sum degList);
         );
---        print degList;
-  --      print degSum;
+        --print degList;
+        --print degSum;
         --print degList;
         --print (-(sum degList));
         ambcan = S1^{degSum}; -- these degrees are probably wrong for us, fix it.
@@ -196,7 +197,7 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
             else if (degList#i < n1) then (
                 tempGens = tempGens + (ideal(badMap(genList#i)))*(ideal baseGens)^(n1 - degList#i);
             );
-            if debugLevel >= 1 then print ("gradedReesPiece: classical:" | toString())
+            if debugLevel >= 1 then print ("gradedReesPiece: classical:" | toString(tempGens));
             i = i+1;
         );
         return tempGens;
@@ -241,6 +242,7 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 	i := 0;
 	t := 0;
 	d1 := 0;
+    if (debugLevel > 0) then print "ReesModuleToIdeal : starting loop";
 	while ((i < #s2) and (flag == false)) do (
 		t = s2#i;
 		h = map(R1^1, M2**R1, {t});
@@ -251,11 +253,16 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 			if (o.Homogeneous==true) then (
 				--print {degree(t#0), (degrees M2)#0};
 				d1 = degree(t#0) - (degrees M2)#0;
+                if (debugLevel > 0) then print ("s2 : " | (toString(s2)));
+                if (debugLevel > 0) then print ("t : "|(toString(s2#i)));
+                if (debugLevel > 0) then print ("degrees M2 : "|(toString(degrees M2)));
+                if (debugLevel > 0) then print ("d1 : " | toString(d1));
 				answer = {answer, d1};
 			);
 			if (o.Map==true) then (
 				answer = flatten {answer, h};
-			)
+			);
+            --1/0;
 		)
         else (print "warning");
 		i = i+1;
@@ -278,7 +285,7 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 			);
 			if (o.Map==true) then (
 				answer = flatten {answer, h};
-			)
+			);
 		);
         i = i + 1;
 	);
@@ -337,6 +344,7 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     local degShift;
     local S1;
     local answer;
+    local baseCanonical;
     if (floor n1 == n1) and (opts.ForceExtendedRees == false) then (
         if (debugLevel >= 1) then print "testIdealNP: Using ordinary Rees algebra";
         --I turned this off for now.  
@@ -352,10 +360,11 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         S1 = classicalReesAlgebra(I1);  
         omegaS1 = canonicalModule2(S1);
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
-        
+        degShift = (omegaS1List#1)#0;
+        baseCanonical = gradedReesPiece(degShift, omegaS1List#0);
         tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         degShift = (omegaS1List#1)#0;
-        if (debugLevel >= 1) then print ("testIdealNP: degShift " | toString(degShift));
+        if (debugLevel >= 1) then print ("testIdealNP: degShift: " | toString(degShift));
         1/0;
         answer = gradedReesPiece(degShift + floor n1, tauOmegaSList#0);
     )
