@@ -19,6 +19,7 @@ export{
     "reesModuleToIdeal",
     "gradedReesPiece",
     "testIdealNP",
+    "testModuleNP",
     "isFJumpingExponentNP",
     "classicalReesAlgebra",
     --"IsGraded",
@@ -313,7 +314,7 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 	answer
 );
 
-testModuleNP = method(Options => {AssumeDomain => false, FrobeniusRootStrategy => Substitution});
+testModuleNP = method(Options => {ForceExtendedRees => false, AssumeDomain => false, FrobeniusRootStrategy => Substitution});
 testModuleNP(QQ, Ideal) := opts -> (n1, I1) -> (
     --THIS IS UNDER CONSTRUCTION
     R1 := ring I1;
@@ -325,33 +326,45 @@ testModuleNP(QQ, Ideal) := opts -> (n1, I1) -> (
     local degShift;
     local S1;
     local answer;
-    if (floor n1 == n1-2) then (        
+    local baseCanonical;
+    flag := true;
+    if (floor n1 == n1) and (n1 > 0) and (opts.ForceExtendedRees == false) then (
+        if (debugLevel >= 1) then print "testModuleNP: Using ordinary Rees algebra";
+        
         S1 = classicalReesAlgebra(I1);  
         omegaS1 = canonicalModule2(S1);
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
-        tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         degShift = (omegaS1List#1)#0;
-        answer = gradedReesPiece(degShift + floor n1, tauOmegaSList#0);
-    )
-    else ( --we do the extended Rees algebra thing
+        if (dim I1 <= dim R1 - 2) then (
+            baseCanonical = reflexify gradedReesPiece(degShift+1, omegaS1List#0);
+            tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+            degShift = (omegaS1List#1)#0; 
+            if (debugLevel >= 1) then print ("testIdealNP: degShift: " | toString(degShift));
+            answer = (gradedReesPiece(degShift + floor n1, tauOmegaSList#0));
+            flag = false;--don't do the extended Rees approach
+        );        
+    );    
+    if flag then ( --we do the extended Rees algebra thing
+        if (debugLevel >= 1) then print "testModuleNP: Using extended Rees algebra";
         S1 = extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
-        omegaS1 = prune canonicalModule2(S1);  
-        --print omegaS1;      
+        omegaS1 = prune canonicalModule2(S1);    
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
-        --degShift = (omegaS1List#1)#0;
-        --answer = gradedReesPiece(degShift, omegaS1List#0);
-        --1/0;
-        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>opts.AssumeDomain, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, CanonicalIdeal=>omegaS1List#0);
+        baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;
         --print tauOmegaS;
-        degShift = (omegaS1List#1)#0;
+        degShift = (omegaS1List#1)#0; 
+        if (debugLevel >= 1) then print ("testModuleNP: degShift " | toString(degShift));
         --print degShift;
-        answer = gradedReesPiece(degShift, tauOmegaS);
+        answer = (gradedReesPiece(degShift, tauOmegaS));
     );
-    (trim answer, gradedReesPiece(degShift, omegaS1List#0))
+    (trim answer, baseCanonical)
 );
 
+testModuleNP(ZZ, Ideal) := opts -> (n1, I1) -> (
+    testModuleNP(n1/1, I1)
+);
 
 testIdealNP = method(Options =>{ForceExtendedRees => false, MaxCartierIndex=>10 });
 testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (

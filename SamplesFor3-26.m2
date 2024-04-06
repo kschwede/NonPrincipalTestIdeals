@@ -4,6 +4,7 @@ loadPackage "MultiplierIdeals";
 debugLevel = 1
 R = ZZ/5[x,y,z]
 I = ideal(x^2,y^3,z^4)
+testModuleNP(2, I)
 elapsedTime testIdealNP(5/4, I)
 elapsedTime testIdealNP(1, I)
 elapsedTime testIdealNP(2, I)
@@ -38,6 +39,8 @@ loadPackage "NonPrincipalTestIdeals";
 needsPackage "Dmodules"
 R = ZZ/3[x,y,z]/ideal(x^2-y*z)
 I = ideal(x,y,z)
+elapsedTime testModuleNP(1/1, I)
+elapsedTime testModuleNP(2/1, I)
 elapsedTime testIdealNP(1/1, I)
 elapsedTime testIdealNP(26/27, I)
 isFPT(1/1, I)
@@ -62,4 +65,16 @@ loadPackage "NonPrincipalTestIdeals"; --this is an E6 singularity, the FPT shoul
     elapsedTime testIdealNP(1/3-1/30, J)
     elapsedTime isFPT(1/3-1/30, J)
 
+
+restart
+loadPackage "NonPrincipalTestIdeals";
+S = ZZ/2[a,b,c,d];
+T = ZZ/2[u,v];
+phi = map(T, S, {u^3, u^2*v, u*v^2, v^3});
+R = S/(ker phi);
+J = ideal(a,b,c,d);
+elapsedTime testModuleNP(1/1, J)
+elapsedTime testModuleNP(9/8, J)
+elapsedTime testModuleNP(2/1, J)
+elapsedTime testModuleNP(17/8, J)
 
