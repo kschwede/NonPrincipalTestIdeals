@@ -544,15 +544,18 @@ TEST /// --check #0, monomial ideals, dimension 2
     J1 = multiplierIdeal(J, 5/4);
     J2 = multiplierIdeal(J, 5/6);
     J3 = multiplierIdeal(J, 13/12);
+    J4 = multiplierIdeal(J, 2);
     R = ZZ/5[x,y];
     I = ideal(x^2,y^3);
     I1 = testIdealNP(5/4, I);
     I2 = testIdealNP(5/6, I);
     I3 = testIdealNP(13/12, I);
+    I4 = testIdealNP(2, I);
     phi = map(S, R, {a,b});
     assert(phi(I1)==J1);
     assert(phi(I2)==J2);
     assert(phi(I3)==J3);
+    assert(phi(I4)==J4);
     assert(I1*I == testIdealNP(9/4, I));--testing Skoda
 ///
 
@@ -563,15 +566,18 @@ TEST /// --check #1, monomial ideals, dimension 3
     J1 = multiplierIdeal(J, 5/4);
     J2 = multiplierIdeal(J, 13/12);
     J3 = multiplierIdeal(J, 21/10);
+    J4 = multiplierIdeal(J, 2);
     R = ZZ/7[x,y,z];
     I = ideal(x^2,y^3,z^4);
     I1 = testIdealNP(5/4, I);
     I2 = testIdealNP(13/12, I);
     I3 = testIdealNP(21/10, I);
+    I4 = testIdealNP(2, I);
     phi = map(S, R, {a,b,c});
     assert(phi(I1)==J1);
     assert(phi(I2)==J2);
     assert(phi(I3)==J3);
+    assert(phi(I4)==J4);
 ///
 
 TEST /// --check #2, monomial ideals, dimension 4
@@ -581,15 +587,18 @@ TEST /// --check #2, monomial ideals, dimension 4
     J1 = multiplierIdeal(J, 2/3);
     J2 = multiplierIdeal(J, 5/4);
     J3 = multiplierIdeal(J, 11/8);
+    J4 = multiplierIdeal(J, 2);
     R = ZZ/3[x,y,z,w];
     I = ideal(x^3,y^2*z,z^3,w^3*z^2);
     I1 = testIdealNP(2/3, I);
     I2 = testIdealNP(5/4, I);
     I3 = testIdealNP(11/8, I); 
+    I4 = testIdealNP(2, I); 
     phi = map(S, R, {a,b,c,d});
     assert(phi(I1)==J1);
     assert(phi(I2)==J2);
     assert(phi(I3)==J3);
+    assert(phi(I4)==J4);
 ///
 
 TEST /// --check #3, non-monomial ideals, dimension 3
@@ -599,13 +608,16 @@ TEST /// --check #3, non-monomial ideals, dimension 3
     J = ideal(a^2+b^2,b^3,c^2+a^2);    
     J2 =  multiplierIdeal(J, 3/2);
     J3 =  multiplierIdeal(J, 7/5);
+    J4 =  multiplierIdeal(J, 2);
     R = ZZ/5[x,y,z];
     I = ideal(x^2+y^2, y^3, z^2+x^2);    
     I2 =  testIdealNP(3/2, I);
     I3 =  testIdealNP(7/5, I);
+    I4 =  testIdealNP(2, I);
     phi = map(S, R, {a,b,c});    
     assert(phi(I2) == J2);
     assert(sub(phi(I3), S) == J3);
+    assert(sub(phi(I4), S) == J4);
 ///
 
 TEST /// --check #4, ambient singular ring, dimension 2, A1 singularity
@@ -614,7 +626,9 @@ TEST /// --check #4, ambient singular ring, dimension 2, A1 singularity
     m = ideal(x,y,z);
     uI = ideal(sub(1,R));
     assert(testIdealNP(10/11, J) == uI);
-    assert(testIdealNP(1/1, J) == m);    
+    assert(testIdealNP(1/1, J) == m);
+    assert(testIdealNP(17/16, J) == m);    
+    assert(testIdealNP(2, J) == m^2);    
 ///
 
 TEST /// --check #5, ambient singular ring, dimension 2, E6 singularity (see [TW, Example 2.5])
