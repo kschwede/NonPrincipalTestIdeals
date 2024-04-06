@@ -5,7 +5,12 @@ debugLevel = 1
 R = ZZ/5[x,y,z]
 I = ideal(x^2,y^3,z^4)
 elapsedTime testIdealNP(5/4, I)
-elapsedTime testIdealNP(26/25, I)
+elapsedTime testIdealNP(1, I)
+elapsedTime testIdealNP(2, I)
+elapsedTime testIdealNP(51/25, I)
+elapsedTime testIdealNP(251/125, I)
+elapsedTime testIdealNP((625*2+1)/625, I)
+elapsedTime testIdealNP(49/25, I)
 elapsedTime testIdealNP(13/12, I)
 isFJumpingExponentNP(13/12, I)
 

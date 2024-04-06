@@ -1,7 +1,7 @@
 newPackage(
     "NonPrincipalTestIdeals",
     Version => "0.0",
-    Date => "November 1, 2023",
+    Date => "April 5th, 2024",
     Authors => {{Name => "Rahul Ajit", Email => "", HomePage => ""},
         {Name => "Matthew Bertucci", Email => "", HomePage => ""}, 
         {Name => "Trung Chau", Email => "", HomePage => ""}, 
@@ -27,10 +27,30 @@ export{
     "ForceExtendedRees", --option
     --"ReturnMap",
     "Map",
+    "isLocallyPrincipalIdeal",
+    "torsionOrder"
 }
 
+isLocallyPrincipalIdeal = method(Options=>{});
+isLocallyPrincipalIdeal(Ideal) := Boolean => opts -> (I1) -> (
+    IDminus := dualize(I1); 
+	myProduct := I1*IDminus;
+	(myProduct == reflexify(myProduct))
+);
+
+torsionOrder = method(Options =>{});
+torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
+    i := 1;
+    local curIdeal;
+    while (i < n1) do (
+        curIdeal = reflexivePower(i, I1);
+        if isLocallyPrincipalIdeal(curIdeal) then return (i, curIdeal);        
+        i = i+1;
+    );
+    return (0, ideal(sub(0, ring I1)));
+);
+
 --needsPackage "ReesAlgebra"
-needsPackage "Divisor"
 --needsPackage "TestIdeals"
 --load "ExtendedReesAlgebra.m2"
 --load "CanonicalModules.m2"
@@ -333,7 +353,7 @@ testModuleNP(QQ, Ideal) := opts -> (n1, I1) -> (
 );
 
 
-testIdealNP = method(Options =>{ForceExtendedRees => false });
+testIdealNP = method(Options =>{ForceExtendedRees => false, MaxCartierIndex=>10 });
 testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
     p1 := char R1;
@@ -345,47 +365,55 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     local S1;
     local answer;
     local baseCanonical;
-    if (floor n1 == n1) and (opts.ForceExtendedRees == false) then (
+    flag := true;
+    if (floor n1 == n1) and (n1 > 0) and (opts.ForceExtendedRees == false) then (
         if (debugLevel >= 1) then print "testIdealNP: Using ordinary Rees algebra";
-        --I turned this off for now.  
-        --integer, can use ordinary Rees algebras.  Need to implement that.
-        --S1 = (flattenRing(reesAlgebra(I1)))#0;
-        --S1#"BaseRing" = R1;
-        --S1#"Degree1" = apply(gens ring(reesIdeal I1), z -> sub(z, S1));
-        --reesList := first entries mingens I1;
---        L0 := apply(reesList, h -> sub(h, T2));
-        --S1#"OriginalList" = apply(reesList, z->sub(z, S1));
-        --S1#"BaseRingList" = reesList;
-        --S1#"ReesAlgebra" = true;
+        
         S1 = classicalReesAlgebra(I1);  
         omegaS1 = canonicalModule2(S1);
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
         degShift = (omegaS1List#1)#0;
-        baseCanonical = gradedReesPiece(degShift, omegaS1List#0);
-        tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
-        degShift = (omegaS1List#1)#0;
-        if (debugLevel >= 1) then print ("testIdealNP: degShift: " | toString(degShift));
-        1/0;
-        answer = gradedReesPiece(degShift + floor n1, tauOmegaSList#0);
-    )
-    else ( --we do the extended Rees algebra thing
+        if (dim I1 <= dim R1 - 2) then (
+            baseCanonical = reflexify gradedReesPiece(degShift+1, omegaS1List#0);
+            --baseCanonicalIdeal = reflexify(moduleToIdeal(baseCanonical));
+            if (isLocallyPrincipalIdeal baseCanonical) then (
+                tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+                degShift = (omegaS1List#1)#0; 
+                if (debugLevel >= 1) then print ("testIdealNP: degShift: " | toString(degShift));
+                answer = (gradedReesPiece(degShift + floor n1, tauOmegaSList#0)) : baseCanonical;
+                flag = false;--don't do the extended Rees approach
+            )
+            else(
+                error "testIdealNP: only works in quasi-Gorenstein rings currently";
+            );
+        );        
+    );    
+    if flag then ( --we do the extended Rees algebra thing
         if (debugLevel >= 1) then print "testIdealNP: Using extended Rees algebra";
         S1 = extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
         omegaS1 = prune canonicalModule2(S1);  
         --print omegaS1;      
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+        baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
+        if not (isLocallyPrincipalIdeal baseCanonical) then error "testIdealNP: only works in quasi-Gorenstein rings currently";--fix this in the future
+
+        -*cartierIndexList := torsionOrder(opts.MaxCartierIndex, baseCanonical);
+        cartierIndex := cartierIndexList#0;
+        cartierIdeal := trim cartierIndexList#1;
+        if (cartierIndex == 0) then error "testIdealNP: base ring does not appear to be Q-Cartier, try increasing MaxCartierIndex.";
+        if #(first entries gens cartierIdeal > 1) then error "testIdealNP: canonicalIdeal of base ring is Q-Cartier, but Macaulay2 can't find principal generator of symbolic power";
+        *-
         --degShift = (omegaS1List#1)#0;
         --answer = gradedReesPiece(degShift, omegaS1List#0);
         --1/0;
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;
         --print tauOmegaS;
-        degShift = (omegaS1List#1)#0;
+        degShift = (omegaS1List#1)#0; 
         if (debugLevel >= 1) then print ("testIdealNP: degShift " | toString(degShift));
         --print degShift;
-        1/0;
-        answer = gradedReesPiece(degShift, tauOmegaS);
+        answer = (gradedReesPiece(degShift, tauOmegaS)) : baseCanonical;
     );
     trim answer
 );
