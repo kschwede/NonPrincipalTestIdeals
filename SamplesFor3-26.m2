@@ -22,6 +22,19 @@ elapsedTime multiplierIdeal(J, 13/12)
 elapsedTime multiplierIdeal(J, 26/25)
 
 restart
+loadPackage "NonPrincipalTestIdeals"
+R = ZZ/5[x,y,z]/ideal(x^2-y*z);
+I = ideal(x^4,y^5);
+S = classicalReesAlgebra(I);
+T = extendedReesAlgebra(I);
+psi = map(T, S, apply(#gens S, i->(gens T)#i));
+elapsedTime omegaModS = canonicalModule2(S)
+elapsedTime omegaModT = canonicalModule2(T)
+omegaModTExt = elapsedTime Hom(Hom(tensor(psi, omegaModS), omegaModT), omegaModT)
+reesModuleToIdeal(T, omegaModTExt, Homogeneous=>true)
+reesModuleToIdeal(T, omegaModT, Homogeneous=>true)
+
+restart
 loadPackage "NonPrincipalTestIdeals";
 R = ZZ/5[x,y,z]
 I2 = ideal(x^3+y^3, y^4, z^2)
