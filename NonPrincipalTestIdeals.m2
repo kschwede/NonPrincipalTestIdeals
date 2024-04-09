@@ -422,11 +422,11 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         )
         else( --MAKE SURE THIS WORKS!!!
             torOrd := torsionOrder(opts.MaxCartierIndex, baseCanonical);
-            if (torOrd == 0) then error "testIdealNP : base ring does not appear to be Q-Gorenstein, try increasing MaxCartierIndex";
+            if (torOrd#0 == 0) then error "testIdealNP : base ring does not appear to be Q-Gorenstein, try increasing MaxCartierIndex";
             f := (first entries gens trim baseCanonical)#0;
             if (f == 0) then error "testIdealNP : something went wrong";
-            newPrinc := first first entries gens ((f^torOrd) : (reflexivePower(torOrd, baseCanonical)));
-            tauOmegaSList = testModule({1/torOrd, n1}, {newPrinc, tvar}, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+            newPrinc := sub(first first entries gens ((ideal f^(torOrd#0)) : (torOrd#1)), S1);
+            tauOmegaSList = testModule({1/(torOrd#0), n1}, {newPrinc, tvar}, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
             tauOmegaS = tauOmegaSList#0;
             --print tauOmegaS;
             degShift = (omegaS1List#1)#0; 

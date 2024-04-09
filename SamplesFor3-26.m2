@@ -34,6 +34,15 @@ omegaModTExt = elapsedTime Hom(Hom(tensor(psi, omegaModS), omegaModT), omegaModT
 reesModuleToIdeal(T, omegaModTExt, Homogeneous=>true)
 reesModuleToIdeal(T, omegaModT, Homogeneous=>true)
 
+restart 
+loadPackage "NonPrincipalTestIdeals"
+T = ZZ/2[a,b,c,d]
+S = ZZ/2[x,y]
+f = map(S, T, {x^3, x^2*y, x*y^2, y^3})
+R = T/(ker f)
+m = ideal(a,b,c,d)
+testIdealNP(666/1000, m)
+
 restart
 loadPackage "NonPrincipalTestIdeals";
 R = ZZ/5[x,y,z]
