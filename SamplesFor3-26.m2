@@ -95,6 +95,9 @@ T = ZZ/2[u,v];
 phi = map(T, S, {u^3, u^2*v, u*v^2, v^3});
 R = S/(ker phi);
 J = ideal(a,b,c,d);
+elapsedTime testModuleNP(3/2, J)
+elapsedTime testModuleNP(3/2-1/16, J)
+elapsedTime trim (testModuleMinusEpsilonNP(3/2, J))#0
 elapsedTime testModuleNP(1/1, J)
 elapsedTime testModuleNP(9/8, J)
 elapsedTime testModuleNP(2/1, J)
