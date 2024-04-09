@@ -20,6 +20,7 @@ export{
     "gradedReesPiece",
     "testIdealNP",
     "testModuleNP",
+    "testModuleMinusEpsilonNP",
     "isFJumpingExponentNP",
     "classicalReesAlgebra",
     --"IsGraded",
@@ -395,9 +396,6 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
                 if (debugLevel >= 1) then print ("testIdealNP: degShift: " | toString(degShift));
                 answer = (gradedReesPiece(degShift + floor n1, tauOmegaSList#0)) : baseCanonical;
                 flag = false;--don't do the extended Rees approach
-            )
-            else(
-                error "testIdealNP: only works in quasi-Gorenstein rings currently";
             );
         );        
     );    
@@ -420,7 +418,7 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
             --print degShift;
             answer = (gradedReesPiece(degShift, tauOmegaS)) : baseCanonical;
         )
-        else( --MAKE SURE THIS WORKS!!!
+        else( 
             torOrd := torsionOrder(opts.MaxCartierIndex, baseCanonical);
             if (torOrd#0 == 0) then error "testIdealNP : base ring does not appear to be Q-Gorenstein, try increasing MaxCartierIndex";
             f := (first entries gens trim baseCanonical)#0;
@@ -440,6 +438,50 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
 
 testIdealNP(ZZ, Ideal) := opts -> (n1, I1) -> (
     testIdealNP(n1/1, I1, opts) 
+);
+
+
+testModuleMinusEpsilonNP= method(Options =>{ForceExtendedRees => false, MaxCartierIndex=>10 });--this tries to compute tau(R, a^{t-epsilon})
+
+testModuleMinusEpsilonNP(QQ, Ideal) := opts -> (n1, I1) -> (
+    R1 := ring I1;
+    pp := char R1;
+    local computedHSLGInitial;
+    local computedHSLG;
+    local tauOmegaSList;
+    local answer1;
+    local answer2;    
+    local tauOmegaS;
+    S1 := extendedReesAlgebra(I1);
+    --print "testing";
+    tvar := S1#"InverseVariable";
+    omegaS1 := canonicalModule2(S1);
+    --print "test1";
+    omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+    baseCanonical := reflexify gradedReesPiece(-1, omegaS1List#0);
+    --if (not isLocallyPrincipalIdeal baseCanonical) then error "testIdealMinusEpsilonNP: expected a quasi-Gorenstein ambient ring";
+    degShift := (omegaS1List#1)#0;
+    baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+    --print "test3";
+    baseTau := baseTauList#0;
+    genList := baseTauList#2;
+
+    --now we have to run the sigma computation
+    ( a1, b1, c1 ) := decomposeFraction( pp, n1, NoZeroC => true );
+    if (instance(genList, RingElement)) then (
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList } );
+        computedHSLG = frobeniusRoot(b1, ceiling( ( pp^b1 - 1 )/( pp - 1 ) ), genList, sub(computedHSLGInitial, ambient S1));
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);
+        return(answer2, baseCanonical);
+    )
+    else if instance(genList, BasicList) then ( -- Karl: I haven't tested this
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => genList );
+        --print "test4";
+        computedHSLG = frobeniusRoot(b1, apply(#genList, zz -> ceiling( ( pp^b1 - 1 )/( pp - 1 ) )), genList, sub(computedHSLGInitial, ambient S1));
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);
+        return(answer2, baseCanonical);
+    );
+    error "isFJumpingExponent (non-principal case): something went wrong with the generator list for the Fedder colon";
 );
 
 isFJumpingExponentNP = method(Options =>{});
@@ -713,5 +755,28 @@ TEST /// --check #9, interesting toric construction,
     assert(sub(testIdealNP(1/1, I), R) == testIdealNP(1/2, I1));
 ///
 
+TEST /// --check #10, Q-Gorenstein, index 3
+--loadPackage "NonPrincipalTestIdeals"
+T = ZZ/2[a,b,c,d];
+S = ZZ/2[x,y];
+f = map(S, T, {x^3, x^2*y, x*y^2, y^3});
+R = T/(ker f);
+m = ideal(a,b,c,d);
+assert (testIdealNP(2/3, m) == m);
+assert (testIdealNP(21/32, m) == ideal(sub(1, R)));
+///
+
+TEST /// --check #11, Q-Gorenstein, index 2
+T = ZZ/3[a,b,c,d,e,f];
+S = ZZ/3[x,y,z];
+f = map(S, T, {x^2, x*y,x*z,y^2,y*z,z^2});
+R = T/(ker f);
+m = ideal(a,d,f); --an ideal with the same integral closure as m
+assert(testIdealNP(3/2, m) == m);
+assert(testIdealNP(40/27, m) == ideal(sub(1,R)));
+///
+
+
 end--
+loadPackage "NonPrincipalTestIdeals"
 
