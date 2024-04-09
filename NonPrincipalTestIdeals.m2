@@ -409,24 +409,31 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
         --print omegaS1;      
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
         baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
-        if not (isLocallyPrincipalIdeal baseCanonical) then error "testIdealNP: only works in quasi-Gorenstein rings currently";--fix this in the future
-
-        -*cartierIndexList := torsionOrder(opts.MaxCartierIndex, baseCanonical);
-        cartierIndex := cartierIndexList#0;
-        cartierIdeal := trim cartierIndexList#1;
-        if (cartierIndex == 0) then error "testIdealNP: base ring does not appear to be Q-Cartier, try increasing MaxCartierIndex.";
-        if #(first entries gens cartierIdeal > 1) then error "testIdealNP: canonicalIdeal of base ring is Q-Cartier, but Macaulay2 can't find principal generator of symbolic power";
-        *-
-        --degShift = (omegaS1List#1)#0;
-        --answer = gradedReesPiece(degShift, omegaS1List#0);
-        --1/0;
-        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
-        tauOmegaS = tauOmegaSList#0;
-        --print tauOmegaS;
-        degShift = (omegaS1List#1)#0; 
-        if (debugLevel >= 1) then print ("testIdealNP: degShift " | toString(degShift));
-        --print degShift;
-        answer = (gradedReesPiece(degShift, tauOmegaS)) : baseCanonical;
+        
+        --if not (isLocallyPrincipalIdeal baseCanonical) then error "testIdealNP: only works in quasi-Gorenstein rings currently";--fix this in the future
+        if (isLocallyPrincipalIdeal baseCanonical) then (
+            tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+            tauOmegaS = tauOmegaSList#0;
+            --print tauOmegaS;
+            degShift = (omegaS1List#1)#0; 
+            if (debugLevel >= 1) then print ("testIdealNP: degShift " | toString(degShift));
+            --print degShift;
+            answer = (gradedReesPiece(degShift, tauOmegaS)) : baseCanonical;
+        )
+        else( --MAKE SURE THIS WORKS!!!
+            torOrd := torsionOrder(opts.MaxCartierIndex, baseCanonical);
+            if (torOrd == 0) then error "testIdealNP : base ring does not appear to be Q-Gorenstein, try increasing MaxCartierIndex";
+            f := (first entries gens trim baseCanonical)#0;
+            if (f == 0) then error "testIdealNP : something went wrong";
+            newPrinc := first first entries gens ((f^torOrd) : (reflexivePower(torOrd, baseCanonical)));
+            tauOmegaSList = testModule({1/torOrd, n1}, {newPrinc, tvar}, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+            tauOmegaS = tauOmegaSList#0;
+            --print tauOmegaS;
+            degShift = (omegaS1List#1)#0; 
+            if (debugLevel >= 1) then print ("testIdealNP: degShift " | toString(degShift));
+            --print degShift;
+            answer = (gradedReesPiece(degShift, tauOmegaS)) : ideal(f);
+        )
     );
     trim answer
 );
