@@ -484,6 +484,10 @@ testModuleMinusEpsilonNP(QQ, Ideal) := opts -> (n1, I1) -> (
     error "isFJumpingExponent (non-principal case): something went wrong with the generator list for the Fedder colon";
 );
 
+testModuleMinusEpsilonNP(ZZ, Ideal) := opts -> (n1, I1) -> (
+    testModuleMinusEpsilonNP(n1/1, I1)
+)
+
 isFJumpingExponentNP = method(Options =>{});
 
 isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
