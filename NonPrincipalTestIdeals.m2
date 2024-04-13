@@ -1,13 +1,14 @@
 newPackage(
     "NonPrincipalTestIdeals",
     Version => "0.0",
-    Date => "April 5th, 2024",
-    Authors => {{Name => "Rahul Ajit", Email => "", HomePage => ""},
-        {Name => "Matthew Bertucci", Email => "", HomePage => ""}, 
-        {Name => "Trung Chau", Email => "", HomePage => ""}, 
-        {Name => "Karl Schwede", Email => "", HomePage => ""},
-        {Name => "Hunter Simper", Email => "", HomePage => ""}},
+    Date => "April 12th, 2024",
+    Authors => {{Name => "Rahul Ajit", Email => "rahul.ghosh@utah.edu", HomePage => ""},
+        {Name => "Matthew Bertucci", Email => "bertucci@math.utah.edu", HomePage => ""}, 
+        {Name => "Trung Chau", Email => "trung.chau@utah.edu", HomePage => ""}, 
+        {Name => "Karl Schwede", Email => "schwede@math.utah.edu", HomePage => ""},
+        {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => ""}},
     Headline => "",
+    Headline => "singularities of pairs with non-principals ideals",
     Keywords => {},
     DebuggingMode => true,
     Reload=>true,     
@@ -95,8 +96,8 @@ canonicalModule2(Ring) := Module => o->(R1) -> (
 	M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
 )
 
-ClassicalReesAlgebra = new Type of QuotientRing
-ExtendedReesAlgebra = new Type of QuotientRing
+--ClassicalReesAlgebra = new Type of QuotientRing
+--ExtendedReesAlgebra = new Type of QuotientRing
 
 getValidVarName = method();
 getValidVarName(Ring) := (R1) -> (
@@ -119,7 +120,7 @@ extendedReesAlgebra(Ideal) := opts->(J1) -> (
     );
 --    print degList;
     ti := getSymbol "ti";
-    T2 := (coefficientRing ring(J1))[ (gens ring J1)|(gens ring I1)|{ti}, Degrees=>degList];
+    T2 := (coefficientRing ring(J1))(monoid[ (gens ring J1)|(gens ring I1)|{ti}, Degrees=>degList]);
     ti = last gens T2;
     --T2 = ambient reesAlgebra J1; 
     --S2 := T2/(sub(I1, T2));    
@@ -158,7 +159,7 @@ classicalReesAlgebra(Ideal) := opts -> (J1) -> (
         degList = apply( (degrees ring J1), j->{0,0} ) | apply(degrees ring I1, j->{1,0});
     );
 --    print degList;
-    T2 := (coefficientRing ring(J1))[ (gens ring J1)|(gens ring I1), Degrees=>degList];
+    T2 := (coefficientRing ring(J1))(monoid[ (gens ring J1)|(gens ring I1), Degrees=>degList]);
     --T2 = ambient reesAlgebra J1; 
     --S2 := T2/(sub(I1, T2));    
     L1 := apply(gens ring I1, u -> sub(u, T2));
@@ -601,6 +602,63 @@ isFPT(QQ, Ideal) := opts -> (n1, I1) -> (
     error "isFPT (non-principal case): something went wrong with the generator list for the Fedder colon";
 );
 
+beginDocumentation()
+
+document {
+    Key => "NonPrincipalTestIdeals",
+    Headline => "a package for calculations of singularities in positive characteristic ",
+	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.",
+	BR{}, BR{},
+	BOLD "Core functions",
+	UL {
+		{TO "testIdealNP", " computes the test ideal ", TEX ///$\tau(R, I^t)$///,},
+		{TO "testModuleNP", " computes the test module ", , TEX ///$\tau(\omega_R, I^t)$///,},
+	},
+     "There are some other functions exported which people may also find useful.", BR{}, BR{},
+	BOLD "Other useful functions",
+	UL {
+		{TO "gradedReesPiece", " computes a graded piece of a homogeneous ideal in a Rees or extended Rees algebra"},
+	},
+}
+
+doc ///
+    Key
+        testIdealNP
+        (testIdealNP, QQ, Ideal)
+        (testIdealNP, ZZ, Ideal)
+    Headline
+        compute the test ideal of a pair
+    Usage
+        J = testIdealNP(t, I)
+    Inputs
+        t:QQ
+            a rational number
+        I:Ideal
+            an ideal
+    Outputs
+        J:Ideal
+            an ideal, the test ideal
+    Description
+        Text
+            This computes the test ideal $\tau(R, I^t)$ of an ideal $I$ in a normal $Q$-Gorenstein domain $R$ of index not divisible by the characteristic $p > 0$.  We begin with example in a regular ring.
+        Example
+            R = ZZ/5[x,y];
+            I = ideal(x^2, y^3);
+            testIdealNP(5/6, I)
+            testIdealNP(5/6-1/25, I)
+            testIdealNP(2, I)
+        Text
+            We now include an example in a singular ring.
+        Example
+            R = ZZ/3[x,y,z]/ideal(x^2-y*z);
+            I = ideal(x,y);
+            testIdealNP(1, I)
+            I2 = ideal(x,y,z);
+            testIdealNP(3/2,I2)
+    SeeAlso
+        testModuleNP
+///
+
 
 
 TEST /// --check #0, monomial ideals, dimension 2
@@ -775,9 +833,10 @@ T = ZZ/3[a,b,c,d,e,f];
 S = ZZ/3[x,y,z];
 f = map(S, T, {x^2, x*y,x*z,y^2,y*z,z^2});
 R = T/(ker f);
-m = ideal(a,d,f); --an ideal with the same integral closure as m
-assert(testIdealNP(3/2, m) == m);
-assert(testIdealNP(40/27, m) == ideal(sub(1,R)));
+m = ideal(a,b,c,d,e,f);
+n = ideal(a,d,f); --an ideal with the same integral closure as m
+assert(testIdealNP(3/2, n) == m);
+assert(testIdealNP(40/27, n) == ideal(sub(1,R)));
 ///
 
 
