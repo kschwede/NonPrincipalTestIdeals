@@ -16,11 +16,9 @@ newPackage(
     )
 export{
     "extendedReesAlgebra",
-    "canonicalModule2",
+    "reesCanonicalModule",
     "reesModuleToIdeal",
     "gradedReesPiece",
-    "testIdealNP",
-    "testModuleNP",
     "testModuleMinusEpsilonNP",
     "isFJumpingExponentNP",
     "classicalReesAlgebra",
@@ -59,8 +57,8 @@ torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
 --load "CanonicalModules.m2"
 
 --the degress need to be fixed to work with extended Rees algebras
-canonicalModule2 = method(Options=>{AmbientCanonical => null})
-canonicalModule2(Ring) := Module => o->(R1) -> (
+reesCanonicalModule = method(Options=>{AmbientCanonical => null})
+reesCanonicalModule(Ring) := Module => o->(R1) -> (
 	S1 := ambient R1;
 	I1 := ideal R1;
 	dR := dim R1;
@@ -131,7 +129,7 @@ extendedReesAlgebra(Ideal) := opts->(J1) -> (
     S2#"InverseVariable" = sub(ti, S2);
     S2#"BaseRing" = ring J1;
     S2#"Degree1" = apply(gens ring(I1), z -> sub(z, S2));
-    S2#"OriginalList" = apply(L0, z->sub(z, S2));
+--    S2#"OriginalList" = apply(L0, z->sub(z, S2));
     S2#"BaseRingList" = reesList;
     S2#"ExtendedReesAlgebra" = true;    
     S2
@@ -169,7 +167,7 @@ classicalReesAlgebra(Ideal) := opts -> (J1) -> (
 
     S2#"BaseRing" = ring J1;
     S2#"Degree1" = apply(gens ring(I1), z -> sub(z, S2));
-    S2#"OriginalList" = apply(reesList, z->sub(z, S2));
+--    S2#"OriginalList" = apply(reesList, z->sub(z, S2));
     S2#"BaseRingList" = reesList;
     S2#"ClassicalReesAlgebra" = true;    
     S2
@@ -316,9 +314,8 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 	answer
 );
 
-testModuleNP = method(Options => {ForceExtendedRees => false, AssumeDomain => false, FrobeniusRootStrategy => Substitution});
-testModuleNP(QQ, Ideal) := opts -> (n1, I1) -> (
-    --THIS IS UNDER CONSTRUCTION
+--testModule = method(Options => {ForceExtendedRees => false, AssumeDomain => false, FrobeniusRootStrategy => Substitution});
+testModule(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
     p1 := char R1;
     local omegaS1;
@@ -330,46 +327,46 @@ testModuleNP(QQ, Ideal) := opts -> (n1, I1) -> (
     local answer;
     local baseCanonical;
     flag := true;
-    if (floor n1 == n1) and (n1 > 0) and (opts.ForceExtendedRees == false) then (
-        if (debugLevel >= 1) then print "testModuleNP: Using ordinary Rees algebra";
+    if (floor n1 == n1) and (n1 > 0) then (
+        if (debugLevel >= 1) then print "testModule (non principal): Using ordinary Rees algebra";
         
         S1 = classicalReesAlgebra(I1);  
-        omegaS1 = canonicalModule2(S1);
+        omegaS1 = reesCanonicalModule(S1);
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
         degShift = (omegaS1List#1)#0;
         if (dim I1 <= dim R1 - 2) then (
             baseCanonical = reflexify gradedReesPiece(degShift+1, omegaS1List#0);
-            tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+            tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0, FrobeniusRootStrategy=>opts.FrobeniusRootStrategy);
             degShift = (omegaS1List#1)#0; 
-            if (debugLevel >= 1) then print ("testIdealNP: degShift: " | toString(degShift));
+            if (debugLevel >= 1) then print ("testIdeal (nonprincipal): degShift: " | toString(degShift));
             answer = (gradedReesPiece(degShift + floor n1, tauOmegaSList#0));
             flag = false;--don't do the extended Rees approach
         );        
     );    
     if flag then ( --we do the extended Rees algebra thing
-        if (debugLevel >= 1) then print "testModuleNP: Using extended Rees algebra";
+        if (debugLevel >= 1) then print "testModule (nonprincipal): Using extended Rees algebra";
         S1 = extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
-        omegaS1 = prune canonicalModule2(S1);    
+        omegaS1 = prune reesCanonicalModule(S1);    
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
         baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;
         --print tauOmegaS;
         degShift = (omegaS1List#1)#0; 
-        if (debugLevel >= 1) then print ("testModuleNP: degShift " | toString(degShift));
+        if (debugLevel >= 1) then print ("testModule (nonprincipal): degShift " | toString(degShift));
         --print degShift;
         answer = (gradedReesPiece(degShift, tauOmegaS));
     );
     (trim answer, baseCanonical)
 );
 
-testModuleNP(ZZ, Ideal) := opts -> (n1, I1) -> (
-    testModuleNP(n1/1, I1)
+testModule(ZZ, Ideal) := opts -> (n1, I1) -> (
+    testModule(n1/1, I1)
 );
 
-testIdealNP = method(Options =>{ForceExtendedRees => false, MaxCartierIndex=>10 });
-testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
+--testIdeal = method(Options =>{ForceExtendedRees => false, MaxCartierIndex=>10 });
+testIdeal(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
     p1 := char R1;
     local omegaS1;
@@ -381,11 +378,11 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     local answer;
     local baseCanonical;
     flag := true;
-    if (floor n1 == n1) and (n1 > 0) and (opts.ForceExtendedRees == false) then (
-        if (debugLevel >= 1) then print "testIdealNP: Using ordinary Rees algebra";
+    if (floor n1 == n1) and (n1 > 0) then (
+        if (debugLevel >= 1) then print "testIdeal (nonprincipal): Using ordinary Rees algebra";
         
         S1 = classicalReesAlgebra(I1);  
-        omegaS1 = canonicalModule2(S1);
+        omegaS1 = reesCanonicalModule(S1);
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
         degShift = (omegaS1List#1)#0;
         if (dim I1 <= dim R1 - 2) then (
@@ -394,42 +391,40 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
             if (isLocallyPrincipalIdeal baseCanonical) then (
                 tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
                 degShift = (omegaS1List#1)#0; 
-                if (debugLevel >= 1) then print ("testIdealNP: degShift: " | toString(degShift));
+                if (debugLevel >= 1) then print ("testIdeal (nonprincipal): degShift: " | toString(degShift));
                 answer = (gradedReesPiece(degShift + floor n1, tauOmegaSList#0)) : baseCanonical;
                 flag = false;--don't do the extended Rees approach
             );
         );        
     );    
     if flag then ( --we do the extended Rees algebra thing
-        if (debugLevel >= 1) then print "testIdealNP: Using extended Rees algebra";
+        if (debugLevel >= 1) then print "testIdeal (nonprincipal): Using extended Rees algebra";
         S1 = extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
-        omegaS1 = prune canonicalModule2(S1);  
+        omegaS1 = prune reesCanonicalModule(S1);  
         --print omegaS1;      
         omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
         baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
-        
-        --if not (isLocallyPrincipalIdeal baseCanonical) then error "testIdealNP: only works in quasi-Gorenstein rings currently";--fix this in the future
         if (isLocallyPrincipalIdeal baseCanonical) then (
             tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
             tauOmegaS = tauOmegaSList#0;
             --print tauOmegaS;
             degShift = (omegaS1List#1)#0; 
-            if (debugLevel >= 1) then print ("testIdealNP: degShift " | toString(degShift));
+            if (debugLevel >= 1) then print ("testIdeal (nonprincipal): degShift " | toString(degShift));
             --print degShift;
             answer = (gradedReesPiece(degShift, tauOmegaS)) : baseCanonical;
         )
         else( 
             torOrd := torsionOrder(opts.MaxCartierIndex, baseCanonical);
-            if (torOrd#0 == 0) then error "testIdealNP : base ring does not appear to be Q-Gorenstein, try increasing MaxCartierIndex";
+            if (torOrd#0 == 0) then error "testIdeal (nonprincipal) : base ring does not appear to be Q-Gorenstein, try increasing MaxCartierIndex";
             f := (first entries gens trim baseCanonical)#0;
-            if (f == 0) then error "testIdealNP : something went wrong";
+            if (f == 0) then error "testIdeal (nonprincipal) : something went wrong";
             newPrinc := sub(first first entries gens ((ideal f^(torOrd#0)) : (torOrd#1)), S1);
             tauOmegaSList = testModule({1/(torOrd#0), n1}, {newPrinc, tvar}, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
             tauOmegaS = tauOmegaSList#0;
             --print tauOmegaS;
             degShift = (omegaS1List#1)#0; 
-            if (debugLevel >= 1) then print ("testIdealNP: degShift " | toString(degShift));
+            if (debugLevel >= 1) then print ("testIdeal (nonprincipal): degShift " | toString(degShift));
             --print degShift;
             answer = (gradedReesPiece(degShift, tauOmegaS)) : ideal(f);
         )
@@ -437,8 +432,8 @@ testIdealNP(QQ, Ideal) := opts -> (n1, I1) -> (
     trim answer
 );
 
-testIdealNP(ZZ, Ideal) := opts -> (n1, I1) -> (
-    testIdealNP(n1/1, I1, opts) 
+testIdeal(ZZ, Ideal) := opts -> (n1, I1) -> (
+    testIdeal(n1/1, I1, opts) 
 );
 
 
@@ -456,7 +451,7 @@ testModuleMinusEpsilonNP(QQ, Ideal) := opts -> (n1, I1) -> (
     S1 := extendedReesAlgebra(I1);
     --print "testing";
     tvar := S1#"InverseVariable";
-    omegaS1 := canonicalModule2(S1);
+    omegaS1 := reesCanonicalModule(S1);
     --print "test1";
     omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
     baseCanonical := reflexify gradedReesPiece(-1, omegaS1List#0);
@@ -503,7 +498,7 @@ isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
     S1 := extendedReesAlgebra(I1);
     --print "testing";
     tvar := S1#"InverseVariable";
-    omegaS1 := canonicalModule2(S1);
+    omegaS1 := reesCanonicalModule(S1);
     --print "test1";
     omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
@@ -559,7 +554,7 @@ isFPT(QQ, Ideal) := opts -> (n1, I1) -> (
     S1 := extendedReesAlgebra(I1);
     --print "testing";
     tvar := S1#"InverseVariable";
-    omegaS1 := canonicalModule2(S1);
+    omegaS1 := reesCanonicalModule(S1);
     --print "test1";
     omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
@@ -611,8 +606,8 @@ document {
 	BR{}, BR{},
 	BOLD "Core functions",
 	UL {
-		{TO "testIdealNP", " computes the test ideal ", TEX ///$\tau(R, I^t)$///,},
-		{TO "testModuleNP", " computes the test module ", , TEX ///$\tau(\omega_R, I^t)$///,},
+		{TO "testIdeal", " computes the test ideal ", TEX ///$\tau(R, I^t)$///,},
+		{TO "testModule", " computes the test module ", , TEX ///$\tau(\omega_R, I^t)$///,},
 	},
      "There are some other functions exported which people may also find useful.", BR{}, BR{},
 	BOLD "Other useful functions",
@@ -623,13 +618,13 @@ document {
 
 doc ///
     Key
-        testIdealNP
-        (testIdealNP, QQ, Ideal)
-        (testIdealNP, ZZ, Ideal)
+        testIdeal
+        (testIdeal, QQ, Ideal)
+        (testIdeal, ZZ, Ideal)
     Headline
         compute the test ideal of a pair
     Usage
-        J = testIdealNP(t, I)
+        J = testIdeal(t, I)
     Inputs
         t:QQ
             a rational number
@@ -644,21 +639,99 @@ doc ///
         Example
             R = ZZ/5[x,y];
             I = ideal(x^2, y^3);
-            testIdealNP(5/6, I)
-            testIdealNP(5/6-1/25, I)
-            testIdealNP(2, I)
+            testIdeal(5/6, I)
+            testIdeal(5/6-1/25, I)
+            testIdeal(2, I)
         Text
             We now include an example in a singular ring.
         Example
             R = ZZ/3[x,y,z]/ideal(x^2-y*z);
             I = ideal(x,y);
-            testIdealNP(1, I)
+            testIdeal(1, I)
             I2 = ideal(x,y,z);
-            testIdealNP(3/2,I2)
+            testIdeal(3/2,I2)
     SeeAlso
-        testModuleNP
+        testIdeal
+        (testModule, QQ, Ideal)
+        testModule
 ///
 
+doc ///
+    Key
+        testModule
+        (testModule, QQ, Ideal)
+        (testModule, ZZ, Ideal)
+    Headline
+        compute the test ideal of a pair
+    Usage
+        J = testModule(t, I)
+    Inputs
+        t:QQ
+            a rational number
+        I:Ideal
+            an ideal
+    Outputs
+        L:List
+            a list with the test module and the canonical module
+    Description
+        Text
+            This computes the test module $\tau(\omega_R, I^t)$ of an ideal $I$ in a normal domain $R$ of index not divisible by the characteristic $p > 0$.  We begin with example in a regular ring.
+        Example
+            R = ZZ/5[x,y];
+            I = ideal(x^2, y^3);
+            testModule(5/6, I)
+            testModule(5/6-1/25, I)
+        Text
+            We now include an example in a non-Gorenstein ring
+        Example
+            T = ZZ/2[a,b,c,d];
+            S = ZZ/2[x,y];
+            f = map(S, T, {x^3, x^2*y, x*y^2, y^3});
+            R = T/(ker f);
+            m = ideal(a,b,c,d);
+            testModule(1, m)
+            testModule(1-1/16, m)
+    SeeAlso
+        testModule
+        (testIdeal, QQ, Ideal)
+        testIdeal
+///
+
+doc ///
+    Key 
+        classicalReesAlgebra
+    Headline
+        format the Rees algebra of an ideal
+    Usage
+        S = classicalReesAlgebra(J)
+    Inputs
+        J:Ideal
+    Outputs
+        S:Ring
+    Description
+        Text
+            This function calls the function reesAlgebra from the package ReesAlgebras and formats it for our purposes. 
+        Text
+            The difference is this ring is flattened, and there are certain keys added for obtaining information about this Rees algebra, as demonstrated in the example below.
+        Example
+            R = QQ[x,y,z];
+            J= ideal(x^2,y);
+            S1 = reesAlgebra J;
+            describe S1
+            S2 = classicalReesAlgebra J;
+            describe S2
+            degrees S2
+            S2#"BaseRing"
+            S2#"Degree1"
+            S2#"BaseRingList"
+        Text
+            BaseRing provides the ring where we blew up the ideal.  Degree1 is the generators of the degree 1 part of the Rees algebra.  BaseRingList is the list of generators of the ideal we blew up. 
+    Caveat
+        Currently, this only works for singly graded base rings.
+    SeeAlso
+        reesAlgebra
+        extendedReesAlgebra
+///
 
 
 TEST /// --check #0, monomial ideals, dimension 2
@@ -671,16 +744,16 @@ TEST /// --check #0, monomial ideals, dimension 2
     J4 = multiplierIdeal(J, 2);
     R = ZZ/5[x,y];
     I = ideal(x^2,y^3);
-    I1 = testIdealNP(5/4, I);
-    I2 = testIdealNP(5/6, I);
-    I3 = testIdealNP(13/12, I);
-    I4 = testIdealNP(2, I);
+    I1 = testIdeal(5/4, I);
+    I2 = testIdeal(5/6, I);
+    I3 = testIdeal(13/12, I);
+    I4 = testIdeal(2, I);
     phi = map(S, R, {a,b});
     assert(phi(I1)==J1);
     assert(phi(I2)==J2);
     assert(phi(I3)==J3);
     assert(phi(I4)==J4);
-    assert(I1*I == testIdealNP(9/4, I));--testing Skoda
+    assert(I1*I == testIdeal(9/4, I));--testing Skoda
 ///
 
 TEST /// --check #1, monomial ideals, dimension 3
@@ -693,10 +766,10 @@ TEST /// --check #1, monomial ideals, dimension 3
     J4 = multiplierIdeal(J, 2);
     R = ZZ/7[x,y,z];
     I = ideal(x^2,y^3,z^4);
-    I1 = testIdealNP(5/4, I);
-    I2 = testIdealNP(13/12, I);
-    I3 = testIdealNP(21/10, I);
-    I4 = testIdealNP(2, I);
+    I1 = testIdeal(5/4, I);
+    I2 = testIdeal(13/12, I);
+    I3 = testIdeal(21/10, I);
+    I4 = testIdeal(2, I);
     phi = map(S, R, {a,b,c});
     assert(phi(I1)==J1);
     assert(phi(I2)==J2);
@@ -714,10 +787,10 @@ TEST /// --check #2, monomial ideals, dimension 4
     J4 = multiplierIdeal(J, 2);
     R = ZZ/3[x,y,z,w];
     I = ideal(x^3,y^2*z,z^3,w^3*z^2);
-    I1 = testIdealNP(2/3, I);
-    I2 = testIdealNP(5/4, I);
-    I3 = testIdealNP(11/8, I); 
-    I4 = testIdealNP(2, I); 
+    I1 = testIdeal(2/3, I);
+    I2 = testIdeal(5/4, I);
+    I3 = testIdeal(11/8, I); 
+    I4 = testIdeal(2, I); 
     phi = map(S, R, {a,b,c,d});
     assert(phi(I1)==J1);
     assert(phi(I2)==J2);
@@ -735,9 +808,9 @@ TEST /// --check #3, non-monomial ideals, dimension 3
     J4 =  multiplierIdeal(J, 2);
     R = ZZ/5[x,y,z];
     I = ideal(x^2+y^2, y^3, z^2+x^2);    
-    I2 =  testIdealNP(3/2, I);
-    I3 =  testIdealNP(7/5, I);
-    I4 =  testIdealNP(2, I);
+    I2 =  testIdeal(3/2, I);
+    I3 =  testIdeal(7/5, I);
+    I4 =  testIdeal(2, I);
     phi = map(S, R, {a,b,c});    
     assert(phi(I2) == J2);
     assert(sub(phi(I3), S) == J3);
@@ -749,10 +822,10 @@ TEST /// --check #4, ambient singular ring, dimension 2, A1 singularity
     J = ideal(x,y,z);
     m = ideal(x,y,z);
     uI = ideal(sub(1,R));
-    assert(testIdealNP(10/11, J) == uI);
-    assert(testIdealNP(1/1, J) == m);
-    assert(testIdealNP(17/16, J) == m);    
-    assert(testIdealNP(2, J) == m^2);    
+    assert(testIdeal(10/11, J) == uI);
+    assert(testIdeal(1/1, J) == m);
+    assert(testIdeal(17/16, J) == m);    
+    assert(testIdeal(2, J) == m^2);    
 ///
 
 TEST /// --check #5, ambient singular ring, dimension 2, E6 singularity (see [TW, Example 2.5])
@@ -760,8 +833,8 @@ TEST /// --check #5, ambient singular ring, dimension 2, E6 singularity (see [TW
     J = ideal(x,y,z);
     m = ideal(x,y,z);
     uI = ideal(sub(1,R));    
-    assert(testIdealNP(1/3-1/27, J) == uI);
-    assert(testIdealNP(1/3-1/30, J) == m);    
+    assert(testIdeal(1/3-1/27, J) == uI);
+    assert(testIdeal(1/3-1/30, J) == m);    
 ///
 
 TEST /// --check #6, ambient singular ring, dimension 2, E7 singularity (see [TW, Example 2.5])
@@ -769,16 +842,16 @@ TEST /// --check #6, ambient singular ring, dimension 2, E7 singularity (see [TW
     J = ideal(x,y,z);
     m = ideal(x,y,z);
     uI = ideal(sub(1,R));    
-    assert(testIdealNP(1/5, J) == uI);
-    assert(testIdealNP(1/4, J) == m);    
+    assert(testIdeal(1/5, J) == uI);
+    assert(testIdeal(1/4, J) == m);    
 ///
 
 TEST /// --check #7, dim 4, codim 2 ideal (non-m-primary)
     R = ZZ/2[x,y,z,w];
     J = (ideal(x,y))*(ideal(z,w))*(ideal(x,w));
-    J1 = testIdealNP(3/2, J);
-    J2 = testIdealNP(2/1, J);
-    J3 = testIdealNP(11/8, J);
+    J1 = testIdeal(3/2, J);
+    J2 = testIdeal(2/1, J);
+    J3 = testIdeal(11/8, J);
     loadPackage "MultiplierIdeals";
     S = QQ[a,b,c,d];
     I = (monomialIdeal(a,b))*(monomialIdeal(c,d))*(monomialIdeal(a,d));
@@ -794,8 +867,8 @@ TEST /// --check #7, dim 4, codim 2 ideal (non-m-primary)
 TEST /// --check #8, dim 4, mixed ideal
     R = ZZ/2[x,y,z,w];
     J = (ideal(x^2,y))*(ideal(y^2,z,w^2));
-    J1 = testIdealNP(3/2, J);
-    J2 = testIdealNP(2/1, J);
+    J1 = testIdeal(3/2, J);
+    J2 = testIdeal(2/1, J);
     loadPackage "MultiplierIdeals";
     S = QQ[a,b,c,d];
     I = (monomialIdeal(a^2,b))*(monomialIdeal(b^2,c,d^2));
@@ -813,8 +886,8 @@ TEST /// --check #9, interesting toric construction,
     I1 = (ideal(z));
     assert(not isFPT(1/3, J));
     assert(isFPT(1/2, J));
-    assert(sub(testIdealNP(1/1, J), R) == sub((ideal(x,z))*(ideal(x,y,z)),R));
-    assert(sub(testIdealNP(1/1, I), R) == testIdealNP(1/2, I1));
+    assert(sub(testIdeal(1/1, J), R) == sub((ideal(x,z))*(ideal(x,y,z)),R));
+    assert(sub(testIdeal(1/1, I), R) == testIdeal(1/2, I1));
 ///
 
 TEST /// --check #10, Q-Gorenstein, index 3
@@ -824,8 +897,8 @@ S = ZZ/2[x,y];
 f = map(S, T, {x^3, x^2*y, x*y^2, y^3});
 R = T/(ker f);
 m = ideal(a,b,c,d);
-assert (testIdealNP(2/3, m) == m);
-assert (testIdealNP(21/32, m) == ideal(sub(1, R)));
+assert (testIdeal(2/3, m) == m);
+assert (testIdeal(21/32, m) == ideal(sub(1, R)));
 ///
 
 TEST /// --check #11, Q-Gorenstein, index 2
@@ -835,8 +908,8 @@ f = map(S, T, {x^2, x*y,x*z,y^2,y*z,z^2});
 R = T/(ker f);
 m = ideal(a,b,c,d,e,f);
 n = ideal(a,d,f); --an ideal with the same integral closure as m
-assert(testIdealNP(3/2, n) == m);
-assert(testIdealNP(40/27, n) == ideal(sub(1,R)));
+assert(testIdeal(3/2, n) == m);
+assert(testIdeal(40/27, n) == ideal(sub(1,R)));
 ///
 
 
