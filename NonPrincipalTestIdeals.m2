@@ -32,6 +32,7 @@ export{
     "torsionOrder"
 }
 
+--the following function checks to see if an ideal is locally principal
 isLocallyPrincipalIdeal = method(Options=>{});
 isLocallyPrincipalIdeal(Ideal) := Boolean => opts -> (I1) -> (
     IDminus := dualize(I1); 
@@ -39,6 +40,7 @@ isLocallyPrincipalIdeal(Ideal) := Boolean => opts -> (I1) -> (
 	(myProduct == reflexify(myProduct))
 );
 
+--the following function checks tries to compute the torsion order of an ideal I1 up to a certain power n1.
 torsionOrder = method(Options =>{});
 torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
     i := 1;
