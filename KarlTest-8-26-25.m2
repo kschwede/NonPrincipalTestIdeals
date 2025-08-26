@@ -54,11 +54,25 @@ restart
 uninstallPackage "NonPrincipalTestIdeals"
 loadPackage "NonPrincipalTestIdeals"
 --now we check canonical modules and reesModuleToIdeal
-R = QQ[x,y];
-J = ideal(x,y);
+R = QQ[x,y,z];
+J = ideal(x,y,z);
 S = classicalReesAlgebra(J);
-T = extendedReesAlgebra(J);
-
 omegaS = reesCanonicalModule(S);
-omegaSIdeal = reesModuleToIdeal()
+(omegaSIdeal, d, phi ) =  reesModuleToIdeal(S, omegaS);
+degShift = d#0; --this is how far we have to shift
+assert(0 == trim gradedReesPiece(0+degShift, omegaSIdeal)); -- the a invariant of the Rees algebra should be -1, so this should be zero.
+baseOmega = trim gradedReesPiece(1+degShift, omegaSIdeal);  --this should be a free module
+assert(isLocallyPrincipalIdeal(baseOmega)); --this is a Gorenstein rational singularity
+assert(baseOmega == trim gradedReesPiece(2+degShift, omegaSIdeal)); --discrepancy 2, so nothing should change
+use R;
+assert((ideal(x,y,z))*baseOmega == trim gradedReesPiece(3+degShift, omegaSIdeal)); --but we should get a jump here.
+T = extendedReesAlgebra(J);
 omegaT = reesCanonicalModule(T);
+(omegaTIdeal, d, psi ) =  reesModuleToIdeal(T, omegaT);
+degShift = d#0; --this is how far we have to shift
+baseOmega = trim gradedReesPiece(-10+degShift, omegaTIdeal);  --this should be a free module
+assert(isLocallyPrincipalIdeal(baseOmega));
+assert(baseOmega == trim gradedReesPiece(1+degShift, omegaTIdeal));
+assert(baseOmega == trim gradedReesPiece(2+degShift, omegaTIdeal));
+use R;
+assert((ideal(x,y,z))*baseOmega == trim gradedReesPiece(3+degShift, omegaTIdeal)); --but we should get a jump here.

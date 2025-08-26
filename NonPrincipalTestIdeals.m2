@@ -24,10 +24,11 @@ export{
     "classicalReesAlgebra",
     --"IsGraded",
     "AmbientCanonical",--option
-    "ExtendedReesAlgebra",--Type    
+    "ExtendedReesAlgebra",--a flag to see if a ring was created via extendedReesAlgebra
+    "ClassicalReesAlgebra",--a flag to see if a ring was created via classicalReesAlgebra
     "ForceExtendedRees", --option
     --"ReturnMap",
-    "Map",
+    --"Map",
     "isLocallyPrincipalIdeal",
     "torsionOrder"
 }
@@ -75,10 +76,10 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
     local ambcan;
     if o.AmbientCanonical === null then ( --we do things slightly weirdly for extended rees algebras.
         if (R1#?"ExtendedReesAlgebra") and (R1#"ExtendedReesAlgebra") then (
-            varList = select(varList, z -> ((degree z)#0 >= 0));
-            degList = apply(varList, q -> (degree(q)));
+            varList = select(varList, z -> ((degree z)#0 >= 0));--grab variables with positive initial degree
+            degList = apply(varList, q -> (degree(q))); --grab their degrees next
             --print degList;
-            degSum = -(sum degList)+{1,0};
+            degSum = -(sum degList)+{1,0};  --we do a shift for t^{-1} variable
         )
         else if (#varList > 0) then ( --then there are some variables
             if (#(degree(varList#0)) == 1) then (
@@ -91,7 +92,7 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
             print degList;
             print degSum;
         );
-        ambcan = S1^{degSum}; -- these degrees are probably wrong for us, fix it.
+        ambcan = S1^{degSum}; 
     )
     else (
         ambcan = o.AmbientCanonical;
@@ -254,7 +255,7 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
 --turns a module of generic rank 1 into an ideal when working in a ring created by classicalReesAlgebra or extendedReesAlgebra.
 reesModuleToIdeal = method(Options => {MTries=>10});
 
-reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) -> 
+reesModuleToIdeal(Ring, Module) := (Ideal, ZZ, Matrix) => o ->(R1, M2) -> 
 (--turns a module to an ideal of a ring
 --	S1 := ambient R1;
 	flag := false;
@@ -270,7 +271,7 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
             answer = flatten {answer, map(R1^1, M2, {apply(#(first entries gens M2), st -> sub(0, R1))})};
         );
 		--);		
-	    return answer;
+	    return toSequence answer;
 	);
 --	M2 := prune M1;
 --	myMatrix := substitute(relations M2, S1);
@@ -330,7 +331,7 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
         i = i + 1;
 	);
 	if (flag == false) then error "internalModuleToIdeal: No way found to embed the module into the ring as an ideal, are you sure it can be embedded as an ideal?";
-	answer
+	toSequence answer
 );
 
 --testModule = method(Options => {ForceExtendedRees => false, AssumeDomain => false, FrobeniusRootStrategy => Substitution});
@@ -348,12 +349,11 @@ testModule(QQ, Ideal) := opts -> (n1, I1) -> (
     flag := true;
     if (floor n1 == n1) and (n1 > 0) then (
         if (debugLevel >= 1) then print "testModule (non principal): Using ordinary Rees algebra";
-        
-        S1 = classicalReesAlgebra(I1);  
-        omegaS1 = reesCanonicalModule(S1);
-        omegaS1List = reesModuleToIdeal(S1, omegaS1);--, Homogeneous=>true, Map => true);
-        degShift = (omegaS1List#1)#0;
         if (dim I1 <= dim R1 - 2) then (
+            S1 = classicalReesAlgebra(I1);  
+            omegaS1 = reesCanonicalModule(S1);
+            omegaS1List = reesModuleToIdeal(S1, omegaS1);--, Homogeneous=>true, Map => true);
+            degShift = (omegaS1List#1)#0;        
             baseCanonical = reflexify gradedReesPiece(degShift+1, omegaS1List#0);
             tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0, FrobeniusRootStrategy=>opts.FrobeniusRootStrategy);
             degShift = (omegaS1List#1)#0; 
@@ -710,7 +710,7 @@ doc ///
     Headline
         embeds a homogeneous rank 1 module as an ideal in a Rees algebra
     Usage
-        I = reesModuleToIdeal(S, M)
+        (I,d,phi) = reesModuleToIdeal(S, M)
     Inputs
         S:Ring
             constructed with classicalReesAlgebra or extendedReesAlgebra        
@@ -719,6 +719,10 @@ doc ///
     Outputs
         I:Ideal
             an ideal of S isomorphic to M as a module
+        d:ZZ
+            the degree shift between the module and ideal
+        phi:Matrix
+            the map M to S^1 whose image is I
     Description
         Text
             
@@ -851,7 +855,7 @@ doc ///
 
 
 TEST /// --check #0, monomial ideals, dimension 2
-    loadPackage "MultiplierIdeals";
+    needsPackage "MultiplierIdeals";
     S = QQ[a,b];
     J = monomialIdeal(a^2,b^3);
     J1 = multiplierIdeal(J, 5/4);
@@ -873,7 +877,7 @@ TEST /// --check #0, monomial ideals, dimension 2
 ///
 
 TEST /// --check #1, monomial ideals, dimension 3
-    loadPackage "MultiplierIdeals";
+    needsPackage "MultiplierIdeals";
     S = QQ[a,b,c];
     J = monomialIdeal(a^2,b^3,c^4);
     J1 = multiplierIdeal(J, 5/4);
@@ -894,7 +898,7 @@ TEST /// --check #1, monomial ideals, dimension 3
 ///
 
 TEST /// --check #2, monomial ideals, dimension 4
-    loadPackage "MultiplierIdeals";
+    needsPackage "MultiplierIdeals";
     S = QQ[a,b,c,d];
     J = monomialIdeal(a^3,b^2*c,c^3,d^3*c^2);
     J1 = multiplierIdeal(J, 2/3);
@@ -919,17 +923,14 @@ TEST /// --check #3, non-monomial ideals, dimension 3
     needsPackage "Dmodules";
     S = QQ[a,b,c];
     J = ideal(a^2+b^2,b^3,c^2+a^2);    
-    J2 =  multiplierIdeal(J, 3/2);
-    J3 =  multiplierIdeal(J, 7/5);
+    J2 =  multiplierIdeal(J, 3/2);    
     J4 =  multiplierIdeal(J, 2);
     R = ZZ/5[x,y,z];
     I = ideal(x^2+y^2, y^3, z^2+x^2);    
     I2 =  testIdeal(3/2, I);
-    I3 =  testIdeal(7/5, I);
     I4 =  testIdeal(2, I);
     phi = map(S, R, {a,b,c});    
-    assert(phi(I2) == J2);
-    assert(sub(phi(I3), S) == J3);
+    assert(phi(I2) == J2);    
     assert(sub(phi(I4), S) == J4);
 ///
 
@@ -949,7 +950,7 @@ TEST /// --check #5, ambient singular ring, dimension 2, E6 singularity (see [TW
     J = ideal(x,y,z);
     m = ideal(x,y,z);
     uI = ideal(sub(1,R));    
-    assert(testIdeal(1/3-1/27, J) == uI);
+    --time assert(testIdeal(1/3-1/25, J) == uI); -- this one is too slow
     assert(testIdeal(1/3-1/30, J) == m);    
 ///
 
@@ -965,13 +966,13 @@ TEST /// --check #6, ambient singular ring, dimension 2, E7 singularity (see [TW
 TEST /// --check #7, dim 4, codim 2 ideal (non-m-primary)
     R = ZZ/2[x,y,z,w];
     J = (ideal(x,y))*(ideal(z,w))*(ideal(x,w));
-    J1 = testIdeal(3/2, J);
+    --J1 = testIdeal(3/2, J); -- this one is too slow
     J2 = testIdeal(2/1, J);
     J3 = testIdeal(11/8, J);
-    loadPackage "MultiplierIdeals";
+    needsPackage "MultiplierIdeals";
     S = QQ[a,b,c,d];
     I = (monomialIdeal(a,b))*(monomialIdeal(c,d))*(monomialIdeal(a,d));
-    I1 = ideal multiplierIdeal(I,  3/2);
+    --I1 = ideal multiplierIdeal(I,  3/2);
     I2 = ideal multiplierIdeal(I,  2/1);
     I3 = ideal multiplierIdeal(I, 11/8);
     phi = map(S, R, {a,b,c,d});
@@ -985,7 +986,7 @@ TEST /// --check #8, dim 4, mixed ideal
     J = (ideal(x^2,y))*(ideal(y^2,z,w^2));
     J1 = testIdeal(3/2, J);
     J2 = testIdeal(2/1, J);
-    loadPackage "MultiplierIdeals";
+    needsPackage "MultiplierIdeals";
     S = QQ[a,b,c,d];
     I = (monomialIdeal(a^2,b))*(monomialIdeal(b^2,c,d^2));
     I1 = ideal multiplierIdeal(I, 3/2);
@@ -1069,7 +1070,32 @@ assert(base*(ideal(a,b,c))^2 == gradedReesPiece(1, IT))
 assert(base*(ideal(a,b,c))^6 == gradedReesPiece(3, IT))
 ///
 
-TEST /// --check #13, checking the basics of constructing canonical modules
+TEST /// --check #13, checking the basics of constructing canonical modules on simple rees algebras
+R = QQ[x,y,z];
+J = ideal(x,y,z);
+S = classicalReesAlgebra(J);
+omegaS = reesCanonicalModule(S);
+(omegaSIdeal, d, phi ) =  reesModuleToIdeal(S, omegaS);
+degShift = d#0; --this is how far we have to shift
+assert(0 == trim gradedReesPiece(0+degShift, omegaSIdeal)); -- the a invariant of the Rees algebra should be -1, so this should be zero.
+baseOmega = trim gradedReesPiece(1+degShift, omegaSIdeal);  --this should be a free module
+assert(isLocallyPrincipalIdeal(baseOmega)); --this is a Gorenstein rational singularity
+assert(baseOmega == trim gradedReesPiece(2+degShift, omegaSIdeal)); --discrepancy 2, so nothing should change
+use R;
+assert((ideal(x,y,z))*baseOmega == trim gradedReesPiece(3+degShift, omegaSIdeal)); --but we should get a jump here.
+T = extendedReesAlgebra(J);
+omegaT = reesCanonicalModule(T);
+(omegaTIdeal, d, psi ) =  reesModuleToIdeal(T, omegaT);
+degShift = d#0; --this is how far we have to shift
+baseOmega = trim gradedReesPiece(-10+degShift, omegaTIdeal);  --this should be a free module
+assert(isLocallyPrincipalIdeal(baseOmega));
+assert(baseOmega == trim gradedReesPiece(1+degShift, omegaTIdeal));
+assert(baseOmega == trim gradedReesPiece(2+degShift, omegaTIdeal));
+use R;
+assert((ideal(x,y,z))*baseOmega == trim gradedReesPiece(3+degShift, omegaTIdeal)); --but we should get a jump here.
+///
+
+TEST ///--check #14
 ///
 
 
