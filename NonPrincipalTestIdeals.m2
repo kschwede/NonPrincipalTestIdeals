@@ -53,12 +53,16 @@ torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
     return (0, ideal(sub(0, ring I1)));
 );
 
---needsPackage "ReesAlgebra"
---needsPackage "TestIdeals"
---load "ExtendedReesAlgebra.m2"
---load "CanonicalModules.m2"
 
 --the degress need to be fixed to work with extended Rees algebras
+--KARL is looking at if this is correct right now.
+
+--This takes a Rees algebra or extended Rees algebra, constructed inn this package using either 
+--classicalReesAlgebra
+--or
+--extendedReesAlgebra
+--and computes the canonical Rees algebra.  
+--If you specify the canonical module of the ambient ring, it will use that instead.
 reesCanonicalModule = method(Options=>{AmbientCanonical => null})
 reesCanonicalModule(Ring) := Module => o->(R1) -> (
 	S1 := ambient R1;
@@ -67,26 +71,26 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
 	dS := dim S1;
 	varList := first entries vars S1;
 	degList := {};
-    degSum := 0;
+    degSum := 0; --default value 0
     local ambcan;
-    if o.AmbientCanonical === null then (
+    if o.AmbientCanonical === null then ( --we do things slightly weirdly for extended rees algebras.
         if (R1#?"ExtendedReesAlgebra") and (R1#"ExtendedReesAlgebra") then (
             varList = select(varList, z -> ((degree z)#0 >= 0));
             degList = apply(varList, q -> (degree(q)));
             --print degList;
             degSum = -(sum degList)+{1,0};
         )
-        else if (#varList > 0) then ( --then there are no variables
+        else if (#varList > 0) then ( --then there are some variables
             if (#(degree(varList#0)) == 1) then (
                 degList = apply(varList, q -> (degree(q))#0); )
             else (
                 degList = apply(varList, q -> (degree(q))); );
             degSum = -(sum degList);
         );
-        --print degList;
-        --print degSum;
-        --print degList;
-        --print (-(sum degList));
+        if (debugLevel > 1) then (
+            print degList;
+            print degSum;
+        );
         ambcan = S1^{degSum}; -- these degrees are probably wrong for us, fix it.
     )
     else (
@@ -96,14 +100,30 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
 	M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
 )
 
---ClassicalReesAlgebra = new Type of QuotientRing
---ExtendedReesAlgebra = new Type of QuotientRing
-
+--this should get a variable name that is not incompatible with the variable names of the given ring.
 getValidVarName = method();
 getValidVarName(Ring) := (R1) -> (
-    --this should be smarter, not sure the right way to do it.  This ougt to work for now.
+    --this should be smarter, not sure the right way to do it.  This ought to work for now.
     s1 := toList("abcdefghijklmnopqrstuvwxyz");
-    (s1#(random (#s1))) | (s1#(random (#s1)))
+    myStr := (s1#(random (#s1))) | (s1#(random (#s1)));
+    myVal := value ("use R1; myStr");
+    flagDone := false;
+
+    while (flagDone == false) do (   
+        if (IndexedVariableTable === class myVal) then (
+            try ( myVal = sub(myVal_1, R1) ) then (
+                myStr = (s1#(random (#s1))) | (s1#(random (#s1)));
+                myVal = value ("use R1; myStr");
+            )
+            else(
+                flagDone = true;
+            );
+        )
+        else(
+            flagDone = true;
+        );
+    );
+    myStr
 )
 
 extendedReesAlgebra = method(Options => {});
@@ -226,13 +246,13 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
         return tempGens;
     )
     else (
-        error "gradedReesPiece: expected a module over a ClassicalReesAlgebra or ExtendedReesAlgebra.";
+        error "gradedReesPiece: expected a module over a ring constructed via classicalReesAlgebra or extendedReesAlgebra.";
     )
 );
 
 
---currently not working in this multi-graded setting
-reesModuleToIdeal = method(Options => {MTries=>10, Homogeneous=>false, Map=>false});
+--turns a module of generic rank 1 into an ideal when working in a ring created by classicalReesAlgebra or extendedReesAlgebra.
+reesModuleToIdeal = method(Options => {MTries=>10});
 
 reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) -> 
 (--turns a module to an ideal of a ring
@@ -241,18 +261,15 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 	answer:=0;
 	if (M2 == 0) then ( --don't work for the zero module	    
 	    answer = ideal(sub(0, R1));
-	    if (o.Homogeneous==true) then (		    
-			answer = {answer, degree (sub(1,R1))};
-		);
-		if (o.ReturnMap==true) then (
-		    if (#entries gens M2 == 0) then (
-		        answer = flatten {answer, map(R1^1, M2, sub(matrix{{}}, R1))};
-		    )
-		    else (
-			    answer = flatten {answer, map(R1^1, M2, {apply(#(first entries gens M2), st -> sub(0, R1))})};
-			);
-		);
-
+	    --if (o.Homogeneous==true) then (		    
+        answer = {answer, degree (sub(1,R1))};
+        if (#entries gens M2 == 0) then (
+            answer = flatten {answer, map(R1^1, M2, sub(matrix{{}}, R1))};
+        )
+        else (
+            answer = flatten {answer, map(R1^1, M2, {apply(#(first entries gens M2), st -> sub(0, R1))})};
+        );
+		--);		
 	    return answer;
 	);
 --	M2 := prune M1;
@@ -273,18 +290,18 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 		if (isInjective(h) == true) then (
 			flag = true;
 			answer = trim ideal(t);
-			if (o.Homogeneous==true) then (
+			--if (o.Homogeneous==true) then (
 				--print {degree(t#0), (degrees M2)#0};
-				d1 = degree(t#0) - (degrees M2)#0;
-                if (debugLevel > 0) then print ("s2 : " | (toString(s2)));
-                if (debugLevel > 0) then print ("t : "|(toString(s2#i)));
-                if (debugLevel > 0) then print ("degrees M2 : "|(toString(degrees M2)));
-                if (debugLevel > 0) then print ("d1 : " | toString(d1));
-				answer = {answer, d1};
-			);
-			if (o.Map==true) then (
-				answer = flatten {answer, h};
-			);
+            d1 = degree(t#0) - (degrees M2)#0;
+            if (debugLevel > 0) then print ("s2 : " | (toString(s2)));
+            if (debugLevel > 0) then print ("t : "|(toString(s2#i)));
+            if (debugLevel > 0) then print ("degrees M2 : "|(toString(degrees M2)));
+            if (debugLevel > 0) then print ("d1 : " | toString(d1));
+            answer = {answer, d1};
+			--);
+			--if (o.Map==true) then (
+			answer = flatten {answer, h};
+			--);
             --1/0;
 		)
         else (print "warning");
@@ -302,13 +319,13 @@ reesModuleToIdeal(Ring, Module) := Ideal => o ->(R1, M2) ->
 		if (isInjective(h) == true) then (
 			flag = true;
 			answer = trim ideal(d);
-			if (o.Homogeneous==true) then (
-				d1 = degree(d#0) - (degrees M2)#0;
-				answer = {answer, d1};
-			);
-			if (o.Map==true) then (
-				answer = flatten {answer, h};
-			);
+			--if (o.Homogeneous==true) then (
+            d1 = degree(d#0) - (degrees M2)#0;
+            answer = {answer, d1};
+			--);
+			--if (o.Map==true) then (
+			answer = flatten {answer, h};
+			--);
 		);
         i = i + 1;
 	);
@@ -334,7 +351,7 @@ testModule(QQ, Ideal) := opts -> (n1, I1) -> (
         
         S1 = classicalReesAlgebra(I1);  
         omegaS1 = reesCanonicalModule(S1);
-        omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+        omegaS1List = reesModuleToIdeal(S1, omegaS1);--, Homogeneous=>true, Map => true);
         degShift = (omegaS1List#1)#0;
         if (dim I1 <= dim R1 - 2) then (
             baseCanonical = reflexify gradedReesPiece(degShift+1, omegaS1List#0);
@@ -350,7 +367,7 @@ testModule(QQ, Ideal) := opts -> (n1, I1) -> (
         S1 = extendedReesAlgebra(I1);
         tvar := S1#"InverseVariable";
         omegaS1 = prune reesCanonicalModule(S1);    
-        omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+        omegaS1List = reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
         baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;
@@ -385,7 +402,7 @@ testIdeal(QQ, Ideal) := opts -> (n1, I1) -> (
         
         S1 = classicalReesAlgebra(I1);  
         omegaS1 = reesCanonicalModule(S1);
-        omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+        omegaS1List = reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
         degShift = (omegaS1List#1)#0;
         if (dim I1 <= dim R1 - 2) then (
             baseCanonical = reflexify gradedReesPiece(degShift+1, omegaS1List#0);
@@ -405,7 +422,7 @@ testIdeal(QQ, Ideal) := opts -> (n1, I1) -> (
         tvar := S1#"InverseVariable";
         omegaS1 = prune reesCanonicalModule(S1);  
         --print omegaS1;      
-        omegaS1List = reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+        omegaS1List = reesModuleToIdeal(S1, omegaS1);-- , Homogeneous=>true, Map => true);
         baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
         if (isLocallyPrincipalIdeal baseCanonical) then (
             tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
@@ -455,7 +472,7 @@ testModuleMinusEpsilonNP(QQ, Ideal) := opts -> (n1, I1) -> (
     tvar := S1#"InverseVariable";
     omegaS1 := reesCanonicalModule(S1);
     --print "test1";
-    omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+    omegaS1List := reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
     baseCanonical := reflexify gradedReesPiece(-1, omegaS1List#0);
     --if (not isLocallyPrincipalIdeal baseCanonical) then error "testIdealMinusEpsilonNP: expected a quasi-Gorenstein ambient ring";
     degShift := (omegaS1List#1)#0;
@@ -502,7 +519,7 @@ isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
     tvar := S1#"InverseVariable";
     omegaS1 := reesCanonicalModule(S1);
     --print "test1";
-    omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+    omegaS1List := reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
 --    if not (gradedReesPiece(degShift, omegaS1List#0) == ideal(sub(1, R1))) then error "isFJumpingExponent (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
     --print "test2";
@@ -558,7 +575,7 @@ isFPT(QQ, Ideal) := opts -> (n1, I1) -> (
     tvar := S1#"InverseVariable";
     omegaS1 := reesCanonicalModule(S1);
     --print "test1";
-    omegaS1List := reesModuleToIdeal(S1, omegaS1, Homogeneous=>true, Map => true);
+    omegaS1List := reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
     targetAnswer := gradedReesPiece(degShift, omegaS1List#0);
     if not (targetAnswer == ideal(sub(1, R1))) then error "isFPT (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
@@ -617,6 +634,103 @@ document {
 		{TO "gradedReesPiece", " computes a graded piece of a homogeneous ideal in a Rees or extended Rees algebra"},
 	},
 }
+
+doc ///
+    Key
+        gradedReesPiece
+        (gradedReesPiece, ZZ, Ideal)        
+    Headline
+        get a certain degree piece of an ideal in an (extended) Rees algebra
+    Usage
+        J = gradedReesPiece(n, I)
+    Inputs
+        n:ZZ
+            a natural number
+        I:Ideal
+            an ideal in an (extended Rees algebra)
+    Outputs
+        J:Ideal
+            an ideal in an the base ring
+    Description
+        Text
+            Given an ideal $J$ in a Rees ring $T = \oplus T_i$ constructed either with @TO classicalReesAlgebra@ or @TO extendedReesAlgebra@, this will take the $n$th graded piece of $J$ and express it as an ideal in $T_0$.
+        Example
+            R = QQ[x,y];
+            J = ideal(x,y);
+            S = classicalReesAlgebra(J);
+            trim gradedReesPiece(0, ideal(1_S))
+            trim gradedReesPiece(1, ideal(1_S))
+            trim gradedReesPiece(3, ideal(1_S))
+        
+            T = extendedReesAlgebra(J);
+            trim gradedReesPiece(-1, ideal(1_T))
+            trim gradedReesPiece(0, ideal(1_T))
+            trim gradedReesPiece(2, ideal(1_T))
+        Text
+            Note the command @TO basis@ cannot be used in the extended Rees algebra case as it cannot handle rings with both positive and negative degrees.
+    Caveat
+        This method is peanut-butter-free.
+    SeeAlso
+        classicalReesAlgebra
+        extendedReesAlgebra
+        basis
+///
+
+doc ///
+    Key
+        reesCanonicalModule
+        (reesCanonicalModule, Ring)        
+    Headline
+        constructs the graded canonical module in a ring constructed via classicalReesAlgebra or extendedReesAlgebra
+    Usage
+        M = reesCanonicalModule(S)
+    Inputs
+        S:Ring
+            constructed with classicalReesAlgebra or extendedReesAlgebra        
+    Outputs
+        M:Module
+            the graded canonical module over S
+    Description
+        Text
+            
+        Example
+            R = QQ[x,y];
+            J = ideal(x,y);            
+        Text
+    SeeAlso
+        classicalReesAlgebra
+        extendedReesAlgebra
+        gradedReesPiece
+///
+
+doc ///
+    Key
+        reesModuleToIdeal
+        (reesModuleToIdeal, Ring, Module)        
+    Headline
+        embeds a homogeneous rank 1 module as an ideal in a Rees algebra
+    Usage
+        I = reesModuleToIdeal(S, M)
+    Inputs
+        S:Ring
+            constructed with classicalReesAlgebra or extendedReesAlgebra        
+        M:Module
+            a homogeneous S-module
+    Outputs
+        I:Ideal
+            an ideal of S isomorphic to M as a module
+    Description
+        Text
+            
+        Example
+            R = QQ[x,y];
+            J = ideal(x,y);            
+        Text
+    SeeAlso
+        classicalReesAlgebra
+        extendedReesAlgebra
+        gradedReesPiece
+///
 
 doc ///
     Key
@@ -912,6 +1026,50 @@ m = ideal(a,b,c,d,e,f);
 n = ideal(a,d,f); --an ideal with the same integral closure as m
 assert(testIdeal(3/2, n) == m);
 assert(testIdeal(40/27, n) == ideal(sub(1,R)));
+///
+
+TEST /// --check #12, checking basics of the gradedReesPiece
+--checking basics
+R = QQ[x,y];
+J = ideal(x,y);
+S = classicalReesAlgebra(J);
+T = extendedReesAlgebra(J);
+--we check gradedReesPiece
+
+IS = ideal(1_S);
+base = gradedReesPiece(0, IS);
+use R
+assert(base*(ideal(x,y))^1 == gradedReesPiece(1, IS))
+assert(base*(ideal(x,y))^3 == gradedReesPiece(3, IS))
+
+IT = ideal(1_T);
+base = gradedReesPiece(0, IT);
+assert(base == gradedReesPiece(-1, IT))
+assert(base == gradedReesPiece(-3, IT))
+assert(base*(ideal(x,y))^1 == gradedReesPiece(1, IT))
+assert(base*(ideal(x,y))^3 == gradedReesPiece(3, IT))
+
+
+R = QQ[a,b,c];
+J = (ideal(a,b,c))^2;
+S = classicalReesAlgebra(J);
+T = extendedReesAlgebra(J);
+IS = ideal(1_S);
+base = gradedReesPiece(0, IS);
+use R
+assert(base*(ideal(a,b,c))^2 == gradedReesPiece(1, IS))
+assert(base*(ideal(a,b,c))^6 == gradedReesPiece(3, IS))
+
+
+IT = ideal(1_T);
+base = gradedReesPiece(0, IT);
+assert(base == gradedReesPiece(-1, IT))
+assert(base == gradedReesPiece(-3, IT))
+assert(base*(ideal(a,b,c))^2 == gradedReesPiece(1, IT))
+assert(base*(ideal(a,b,c))^6 == gradedReesPiece(3, IT))
+///
+
+TEST /// --check #13, checking the basics of constructing canonical modules
 ///
 
 
