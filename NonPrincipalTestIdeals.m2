@@ -12,16 +12,18 @@ newPackage(
     Keywords => {},
     DebuggingMode => true,
     Reload=>true,     
-    PackageExports => {"Divisor", "TestIdeals", "FrobeniusThresholds", "ReesAlgebra"}
+    PackageExports => {"Divisor", "TestIdeals", "FrobeniusThresholds", "ReesAlgebra", "Complexes"}
     )
 export{
     "extendedReesAlgebra",
     "reesCanonicalModule",
     "reesModuleToIdeal",
     "gradedReesPiece",
-    "testModuleMinusEpsilonNP",
-    "isFJumpingExponentNP",
+    "testModuleMinusEpsilon",
+    --"isFJumpingExponent",
+    "isFJumpingExponentModule",
     "classicalReesAlgebra",
+    "manualExt", --since Macaulay2's Ext doesn't give correct answers in rings with negatively graded variables, we make our own manually
     --"IsGraded",
     "AmbientCanonical",--option
     "ExtendedReesAlgebra",--a flag to see if a ring was created via extendedReesAlgebra
@@ -29,11 +31,11 @@ export{
     "ForceExtendedRees", --option
     --"ReturnMap",
     --"Map",
-    "isLocallyPrincipalIdeal",
+    --"isLocallyPrincipalIdeal",
     "torsionOrder"
 }
 
---the following function checks to see if an ideal is locally principal
+--the following function checks to see if an ideal is locally principal.
 isLocallyPrincipalIdeal = method(Options=>{});
 isLocallyPrincipalIdeal(Ideal) := Boolean => opts -> (I1) -> (
     IDminus := dualize(I1); 
@@ -54,6 +56,14 @@ torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
     return (0, ideal(sub(0, ring I1)));
 );
 
+
+manualExt = method(Options=>{}); --the current implementation of Ext does not work if rings have negatively graded variables.  We do it manually instead.
+
+manualExt(ZZ,Module,Module):= (Module) => opts -> (n1, M1, M2) -> (
+    myRes := resolution(M1);
+    myResHom := Hom(myRes, M2);
+    HH^n1(myResHom)
+);
 
 --the degress need to be fixed to work with extended Rees algebras
 --KARL is looking at if this is correct right now.
@@ -97,7 +107,7 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
     else (
         ambcan = o.AmbientCanonical;
         --print (degrees ambcan);
-    );
+    );    
 	M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
 )
 
@@ -357,7 +367,8 @@ testModule(QQ, Ideal) := opts -> (n1, I1) -> (
             baseCanonical = reflexify gradedReesPiece(degShift+1, omegaS1List#0);
             tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0, FrobeniusRootStrategy=>opts.FrobeniusRootStrategy);
             degShift = (omegaS1List#1)#0; 
-            if (debugLevel >= 1) then print ("testIdeal (nonprincipal): degShift: " | toString(degShift));
+            if (debugLevel >= 1) then print ("testModule (nonprincipal): degShift: " | toString(degShift));
+            if (debugLevel >= 1) then print ("testModule (nonprincipal): module: " | toString(tauOmegaSList#0) | " in ambient " | toString(omegaS1List#0));
             answer = (gradedReesPiece(degShift + floor n1, tauOmegaSList#0));
             flag = false;--don't do the extended Rees approach
         );        
@@ -370,11 +381,12 @@ testModule(QQ, Ideal) := opts -> (n1, I1) -> (
         omegaS1List = reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
         baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
-        tauOmegaS = tauOmegaSList#0;
-        --print tauOmegaS;
+        tauOmegaS = tauOmegaSList#0;        
         degShift = (omegaS1List#1)#0; 
         if (debugLevel >= 1) then print ("testModule (nonprincipal): degShift " | toString(degShift));
         --print degShift;
+         if (debugLevel >= 1) then print ("testModule (nonprincipal): module: " | toString(tauOmegaSList#0) | " in ambient " | toString(omegaS1List#0));
+         --print tauOmegaS;
         answer = (gradedReesPiece(degShift, tauOmegaS));
     );
     (trim answer, baseCanonical)
@@ -423,7 +435,7 @@ testIdeal(QQ, Ideal) := opts -> (n1, I1) -> (
         omegaS1 = prune reesCanonicalModule(S1);  
         --print omegaS1;      
         omegaS1List = reesModuleToIdeal(S1, omegaS1);-- , Homogeneous=>true, Map => true);
-        baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
+        baseCanonical = reflexify gradedReesPiece(-1 - dim R1, omegaS1List#0); --is that small enough?
         if (isLocallyPrincipalIdeal baseCanonical) then (
             tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
             tauOmegaS = tauOmegaSList#0;
@@ -456,9 +468,9 @@ testIdeal(ZZ, Ideal) := opts -> (n1, I1) -> (
 );
 
 
-testModuleMinusEpsilonNP= method(Options =>{ForceExtendedRees => false, MaxCartierIndex=>10 });--this tries to compute tau(R, a^{t-epsilon})
+testModuleMinusEpsilon= method(Options =>{ForceExtendedRees => false, MaxCartierIndex=>10 });--this tries to compute tau(R, a^{t-epsilon})
 
-testModuleMinusEpsilonNP(QQ, Ideal) := opts -> (n1, I1) -> (
+testModuleMinusEpsilon(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
     pp := char R1;
     local computedHSLGInitial;
@@ -499,13 +511,14 @@ testModuleMinusEpsilonNP(QQ, Ideal) := opts -> (n1, I1) -> (
     error "isFJumpingExponent (non-principal case): something went wrong with the generator list for the Fedder colon";
 );
 
-testModuleMinusEpsilonNP(ZZ, Ideal) := opts -> (n1, I1) -> (
-    testModuleMinusEpsilonNP(n1/1, I1)
+testModuleMinusEpsilon(ZZ, Ideal) := opts -> (n1, I1) -> (
+    testModuleMinusEpsilon(n1/1, I1)
 )
 
-isFJumpingExponentNP = method(Options =>{});
+isFJumpingExponentModule = method(Options =>{AssumeDomain => true, AtOrigin => false, FrobeniusRootStrategy => Substitution, Verbose=>false});
 
-isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
+isFJumpingExponentModule(QQ, Ideal) := opts -> (n1, I1) -> (
+    if opts.AssumeDomain == false then error "isFJumpingExponentModule: not yet implemented for the non-domain case";    
     R1 := ring I1;
     pp := char R1;
     local computedHSLGInitial;
@@ -538,8 +551,15 @@ isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
         --print "test5";
         tauOmegaS = tauOmegaSList#0;        
         answer1 = gradedReesPiece(degShift, tauOmegaS);
-        answer2 = gradedReesPiece(degShift, computedHSLG*S1);
-        return not(answer1 == answer2);
+        if (opts.Verbose) then print ("tau(a^t) is " | toString(answer1));
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);        
+        if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
+        if opts.AtOrigin then (            
+            return not( saturate(answer1) == saturate(answer2));
+        )
+        else( 
+            return not(answer1 == answer2);
+        );
     )
     else if instance(genList, BasicList) then ( -- Karl: I haven't tested this
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => genList, CanonicalIdeal => omegaS1List#0);
@@ -549,14 +569,21 @@ isFJumpingExponentNP(QQ, Ideal) := opts -> (n1, I1) -> (
         --print "test5";
         tauOmegaS = tauOmegaSList#0;        
         answer1 = gradedReesPiece(degShift, tauOmegaS);
+        if (opts.Verbose) then print ("tau(a^t) is " | toString(answer1));
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);
-        return not(answer1 == answer2);
+        if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
+        if opts.AtOrigin then (
+            return not( saturate(answer1) == saturate(answer2));
+        )
+        else( 
+            return not(answer1 == answer2);
+        );
     );
     error "isFJumpingExponent (non-principal case): something went wrong with the generator list for the Fedder colon";
 );
 
-isFJumpingExponent(ZZ, Ideal) := opts -> (n1, I1) -> (
-    isFJumpingExponent(n1/1, I1)
+isFJumpingExponentModule(ZZ, Ideal) := opts -> (n1, I1) -> (
+    isFJumpingExponentModule(n1/1, I1, opts)
 );
 
 --isFPT = method(Options)
@@ -981,7 +1008,7 @@ TEST /// --check #7, dim 4, codim 2 ideal (non-m-primary)
     assert(phi(J3)==I3);
 ///
 
-TEST /// --check #8, dim 4, mixed ideal
+TEST /// --check #8, dim 4, mixed ideal (some height one components)
     R = ZZ/2[x,y,z,w];
     J = (ideal(x^2,y))*(ideal(y^2,z,w^2));
     J1 = testIdeal(3/2, J);
@@ -1095,7 +1122,26 @@ use R;
 assert((ideal(x,y,z))*baseOmega == trim gradedReesPiece(3+degShift, omegaTIdeal)); --but we should get a jump here.
 ///
 
-TEST ///--check #14
+TEST ///--jumping number computations
+R = ZZ/7[x,y,z];
+m = ideal(x,y,z);
+assert(isFJumpingExponentModule(5/2, m) == false);
+assert(isFJumpingExponentModule(3, m) == true);
+assert(isFJumpingExponentModule(4, m) == true);
+
+S = ZZ/5[a,b];
+J = (ideal(a,b))*(ideal(a^2,b))^2;--this is a monomial ideal, we know the log resolution, computing by hand means that the lct = fpt should be min(2/3,3/5) = 3/5.
+L = testModule(3/5, J)
+assert((ideal(a,b))*(L#1) == L#0)
+K = testModuleMinusEpsilon(3/5, J)
+assert(K#1 == K#0)
+isFJumpingExponentModule(3/5, J)
+///
+
+TEST ///--checking isFJumpingExponentModule for the origin computation
+    R = ZZ/5[x,y];
+    m = ideal((x-1)^2,y^2);
+    assert(isFJumpingExponentModule(3/2, m));
 ///
 
 
