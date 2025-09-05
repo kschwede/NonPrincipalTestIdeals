@@ -60,7 +60,7 @@ torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
 manualExt = method(Options=>{}); --the current implementation of Ext does not work if rings have negatively graded variables.  We do it manually instead.
 
 manualExt(ZZ,Module,Module):= (Module) => opts -> (n1, M1, M2) -> (
-    myRes := resolution(M1);
+    myRes := resolution(M1, DegreeLimit => n1+1);
     myResHom := Hom(myRes, M2);
     HH^n1(myResHom)
 );
@@ -108,7 +108,8 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
         ambcan = o.AmbientCanonical;
         --print (degrees ambcan);
     );    
-	M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
+	--M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
+    M1 := (manualExt(dS - dR,S1^1/I1, ambcan))**R1
 )
 
 --this should get a variable name that is not incompatible with the variable names of the given ring.
