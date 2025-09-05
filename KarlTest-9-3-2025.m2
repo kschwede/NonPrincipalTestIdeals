@@ -22,14 +22,16 @@ assert(K#1 == K#0)
 isFJumpingExponent(3/5, J)
 
 
-
+restart
+loadPackage "NonPrincipalTestIdeals"
 R = ZZ/5[x,y];
 m = ideal((x-1)^2,y^2);
 S = classicalReesAlgebra(m)
 T = extendedReesAlgebra(m)
 reesCanonicalModule(S)
-loadPackage "NonPrincipalTestIdeals"
 reesCanonicalModule(T)
+testModule(11/10, m)
+testModule(1, m)
 
 R = ZZ/5[x,y];
 m = ideal((x-1),y);
