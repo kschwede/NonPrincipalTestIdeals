@@ -31,13 +31,13 @@ export{
     "ForceExtendedRees", --option
     --"ReturnMap",
     --"Map",
-    --"isLocallyPrincipalIdeal",
+    "isInvertibleIdeal",
     "torsionOrder"
 }
 
 --the following function checks to see if an ideal is locally principal.
-isLocallyPrincipalIdeal = method(Options=>{});
-isLocallyPrincipalIdeal(Ideal) := Boolean => opts -> (I1) -> (
+isInvertibleIdeal = method(Options=>{});
+isInvertibleIdeal(Ideal) := Boolean => opts -> (I1) -> (
     IDminus := dualize(I1); 
 	myProduct := I1*IDminus;
 	(myProduct == reflexify(myProduct))
@@ -50,7 +50,7 @@ torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
     local curIdeal;
     while (i < n1) do (
         curIdeal = reflexivePower(i, I1);
-        if isLocallyPrincipalIdeal(curIdeal) then return (i, curIdeal);        
+        if isInvertibleIdeal(curIdeal) then return (i, curIdeal);        
         i = i+1;
     );
     return (0, ideal(sub(0, ring I1)));
@@ -60,7 +60,7 @@ torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
 manualExt = method(Options=>{}); --the current implementation of Ext does not work if rings have negatively graded variables.  We do it manually instead.
 
 manualExt(ZZ,Module,Module):= (Module) => opts -> (n1, M1, M2) -> (
-    myRes := resolution(M1, DegreeLimit => n1+1);
+    myRes := resolution(M1); --, DegreeLimit => n1+1); --get weird errors
     myResHom := Hom(myRes, M2);
     HH^n1(myResHom)
 );
@@ -420,7 +420,7 @@ testIdeal(QQ, Ideal) := opts -> (n1, I1) -> (
         if (dim I1 <= dim R1 - 2) then (
             baseCanonical = reflexify gradedReesPiece(degShift+1, omegaS1List#0);
             --baseCanonicalIdeal = reflexify(moduleToIdeal(baseCanonical));
-            if (isLocallyPrincipalIdeal baseCanonical) then (
+            if (isInvertibleIdeal baseCanonical) then (
                 tauOmegaSList = testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
                 degShift = (omegaS1List#1)#0; 
                 if (debugLevel >= 1) then print ("testIdeal (nonprincipal): degShift: " | toString(degShift));
@@ -437,7 +437,7 @@ testIdeal(QQ, Ideal) := opts -> (n1, I1) -> (
         --print omegaS1;      
         omegaS1List = reesModuleToIdeal(S1, omegaS1);-- , Homogeneous=>true, Map => true);
         baseCanonical = reflexify gradedReesPiece(-1 - dim R1, omegaS1List#0); --is that small enough?
-        if (isLocallyPrincipalIdeal baseCanonical) then (
+        if (isInvertibleIdeal baseCanonical) then (
             tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
             tauOmegaS = tauOmegaSList#0;
             --print tauOmegaS;
@@ -487,7 +487,7 @@ testModuleMinusEpsilon(QQ, Ideal) := opts -> (n1, I1) -> (
     --print "test1";
     omegaS1List := reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
     baseCanonical := reflexify gradedReesPiece(-1, omegaS1List#0);
-    --if (not isLocallyPrincipalIdeal baseCanonical) then error "testIdealMinusEpsilonNP: expected a quasi-Gorenstein ambient ring";
+    --if (not isInvertibleIdeal baseCanonical) then error "testIdealMinusEpsilonNP: expected a quasi-Gorenstein ambient ring";
     degShift := (omegaS1List#1)#0;
     baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
     --print "test3";
@@ -1003,8 +1003,7 @@ TEST /// --check #7, dim 4, codim 2 ideal (non-m-primary)
     --I1 = ideal multiplierIdeal(I,  3/2);
     I2 = ideal multiplierIdeal(I,  2/1);
     I3 = ideal multiplierIdeal(I, 11/8);
-    phi = map(S, R, {a,b,c,d});
-    assert(phi(J1)==I1);
+    phi = map(S, R, {a,b,c,d});    
     assert(phi(J2)==I2);
     assert(phi(J3)==I3);
 ///
@@ -1107,7 +1106,7 @@ omegaS = reesCanonicalModule(S);
 degShift = d#0; --this is how far we have to shift
 assert(0 == trim gradedReesPiece(0+degShift, omegaSIdeal)); -- the a invariant of the Rees algebra should be -1, so this should be zero.
 baseOmega = trim gradedReesPiece(1+degShift, omegaSIdeal);  --this should be a free module
-assert(isLocallyPrincipalIdeal(baseOmega)); --this is a Gorenstein rational singularity
+assert(isInvertibleIdeal(baseOmega)); --this is a Gorenstein rational singularity
 assert(baseOmega == trim gradedReesPiece(2+degShift, omegaSIdeal)); --discrepancy 2, so nothing should change
 use R;
 assert((ideal(x,y,z))*baseOmega == trim gradedReesPiece(3+degShift, omegaSIdeal)); --but we should get a jump here.
@@ -1116,7 +1115,7 @@ omegaT = reesCanonicalModule(T);
 (omegaTIdeal, d, psi ) =  reesModuleToIdeal(T, omegaT);
 degShift = d#0; --this is how far we have to shift
 baseOmega = trim gradedReesPiece(-10+degShift, omegaTIdeal);  --this should be a free module
-assert(isLocallyPrincipalIdeal(baseOmega));
+assert(isInvertibleIdeal(baseOmega));
 assert(baseOmega == trim gradedReesPiece(1+degShift, omegaTIdeal));
 assert(baseOmega == trim gradedReesPiece(2+degShift, omegaTIdeal));
 use R;
