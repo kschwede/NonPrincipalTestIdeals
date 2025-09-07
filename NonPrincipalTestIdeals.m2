@@ -29,6 +29,7 @@ export{
     "ExtendedReesAlgebra",--a flag to see if a ring was created via extendedReesAlgebra
     "ClassicalReesAlgebra",--a flag to see if a ring was created via classicalReesAlgebra
     "ForceExtendedRees", --option
+    "isFRationalThreshold",
     --"ReturnMap",
     --"Map",
     "isInvertibleIdeal",
@@ -1246,6 +1247,15 @@ TEST ///--checking isFJumpingExponentModule non-homogeneous ideals
     assert(isFJumpingExponentModule(5/6,J)); 
     assert(isFJumpingExponent(5/6,J));
     assert(not isFJumpingExponent(3/4,J)); 
+///
+
+TEST /// --checking isFRationalThreshold
+R = ZZ/3[x,y];
+J = ideal(x^2,y^3);
+assert (isFRationalThreshold(5/6, J));
+assert (not isFRationalThreshold(2/3, J));
+assert( not isFRationalThreshold(8/9, J));
+assert (not isFRationalThreshold(1+5/6, J));
 ///
 
 
