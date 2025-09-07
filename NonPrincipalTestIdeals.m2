@@ -1164,7 +1164,7 @@ isFJumpingExponentModule(3/5, J)
 T = ZZ/2[x,y,z]/ideal(x^2 -y*z);
 J = ideal(x^3,y^3,z^3);
 assert(isFJumpingExponent(1/3, J));
-assert(not isFJumpingExponent(1/4, J));
+assert(not isFJumpingExponentModule(1/4, J));
 ///
 
 TEST ///--checking isFJumpingExponentModule non-homogeneous ideals
