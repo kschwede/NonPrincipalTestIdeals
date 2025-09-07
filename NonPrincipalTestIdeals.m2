@@ -1,7 +1,7 @@
 newPackage(
     "NonPrincipalTestIdeals",
     Version => "0.0",
-    Date => "April 12th, 2024",
+    Date => "September 6th, 2025",
     Authors => {{Name => "Rahul Ajit", Email => "rahul.ghosh@utah.edu", HomePage => ""},
         {Name => "Matthew Bertucci", Email => "bertucci@math.utah.edu", HomePage => ""}, 
         {Name => "Trung Chau", Email => "trung.chau@utah.edu", HomePage => ""}, 
@@ -1138,10 +1138,13 @@ assert(K#1 == K#0)
 isFJumpingExponentModule(3/5, J)
 ///
 
-TEST ///--checking isFJumpingExponentModule for the origin computation
+TEST ///--checking isFJumpingExponentModule non-homogeneous ideals
     R = ZZ/5[x,y];
     m = ideal((x-1)^2,y^2);
     assert(isFJumpingExponentModule(3/2, m));
+    R = ZZ/3[a,b];
+    J = ideal((a-2)^2,(b-1)^3);
+    assert(isFJumpingExponentModule(5/6,J)); 
 ///
 
 
