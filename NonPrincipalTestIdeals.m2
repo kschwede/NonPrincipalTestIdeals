@@ -587,6 +587,30 @@ isFJumpingExponentModule(ZZ, Ideal) := opts -> (n1, I1) -> (
     isFJumpingExponentModule(n1/1, I1, opts)
 );
 
+--isFJumpingExponent is defined in FrobeniusThresholds
+
+isFJumpingExponent(QQ, Ideal) := opts -> (n1, I1) -> (
+    if opts.AssumeDomain == false then error "isFJumpingExponentModule: not yet implemented for the non-domain case";    
+    if (class ring I1 === PolynomialRing) then (  return isFJumpingExponentModule(n1, I1, AssumeDomain => opts.AssumeDomain, AtOrigin => opts.AtOrigin, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, Verbose=>opts.Verbose); );
+     
+    R1 := ring I1;
+    
+    baseCanonical := canonicalIdeal(R1);
+    if (isInvertibleIdeal baseCanonical) then (
+        return isFJumpingExponentModule(n1, I1, AssumeDomain => opts.AssumeDomain, AtOrigin => opts.AtOrigin, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, Verbose=>opts.Verbose);
+    )
+    else(
+        torOrd := torsionOrder(opts.MaxCartierIndex, baseCanonical);
+        if (torOrd#0 == 0) then error "testIdeal (nonprincipal) : base ring does not appear to be Q-Gorenstein, try increasing MaxCartierIndex";
+        error "testIdeal (nonprincipal) : not yet implemented in the Q-Gorenstein case";
+    );
+    error "isFJumpingExponent (non-principal case): something went wrong with the generator list for the Fedder colon";
+);
+
+isFJumpingExponent(ZZ, Ideal) := opts -> (n1, I1) -> (
+    isFJumpingExponent(n1/1, I1, opts)
+);
+
 --isFPT = method(Options)
 
 isFPT(QQ, Ideal) := opts -> (n1, I1) -> (
@@ -1123,12 +1147,12 @@ assert((ideal(x,y,z))*baseOmega == trim gradedReesPiece(3+degShift, omegaTIdeal)
 ///
 
 TEST ///--jumping number computations
-R = ZZ/7[x,y,z];
+R = ZZ/3[x,y,z];
 m = ideal(x,y,z);
 assert(isFJumpingExponentModule(5/2, m) == false);
-assert(isFJumpingExponentModule(3, m) == true);
-assert(isFJumpingExponentModule(4, m) == true);
-
+assert(isFJumpingExponent(3, m) == true);
+assert(isFJumpingExponent(4, m) == true);
+--
 S = ZZ/5[a,b];
 J = (ideal(a,b))*(ideal(a^2,b))^2;--this is a monomial ideal, we know the log resolution, computing by hand means that the lct = fpt should be min(2/3,3/5) = 3/5.
 L = testModule(3/5, J)
@@ -1136,15 +1160,23 @@ assert((ideal(a,b))*(L#1) == L#0)
 K = testModuleMinusEpsilon(3/5, J)
 assert(K#1 == K#0)
 isFJumpingExponentModule(3/5, J)
+--
+T = ZZ/2[x,y,z]/ideal(x^2 -y*z);
+J = ideal(x^3,y^3,z^3);
+assert(isFJumpingExponent(1/3, J));
+assert(not isFJumpingExponent(1/4, J));
 ///
 
 TEST ///--checking isFJumpingExponentModule non-homogeneous ideals
     R = ZZ/5[x,y];
     m = ideal((x-1)^2,y^2);
     assert(isFJumpingExponentModule(3/2, m));
-    R = ZZ/3[a,b];
+    assert(not isFJumpingExponent(4/5, m));
+    R = ZZ/2[a,b];
     J = ideal((a-2)^2,(b-1)^3);
     assert(isFJumpingExponentModule(5/6,J)); 
+    assert(isFJumpingExponent(5/6,J));
+    assert(not isFJumpingExponent(3/4,J)); 
 ///
 
 
