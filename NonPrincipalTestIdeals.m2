@@ -380,10 +380,10 @@ testModule(QQ, Ideal) := opts -> (n1, I1) -> (
         tvar := S1#"InverseVariable";
         omegaS1 = prune reesCanonicalModule(S1);    
         omegaS1List = reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
-        baseCanonical = reflexify gradedReesPiece(-1, omegaS1List#0);
+        degShift = (omegaS1List#1)#0; 
+        baseCanonical = reflexify gradedReesPiece(degShift-1-dim R1, omegaS1List#0);
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;        
-        degShift = (omegaS1List#1)#0; 
         if (debugLevel >= 1) then print ("testModule (nonprincipal): degShift " | toString(degShift));
         --print degShift;
          if (debugLevel >= 1) then print ("testModule (nonprincipal): module: " | toString(tauOmegaSList#0) | " in ambient " | toString(omegaS1List#0));
@@ -436,12 +436,12 @@ testIdeal(QQ, Ideal) := opts -> (n1, I1) -> (
         omegaS1 = prune reesCanonicalModule(S1);  
         --print omegaS1;      
         omegaS1List = reesModuleToIdeal(S1, omegaS1);-- , Homogeneous=>true, Map => true);
-        baseCanonical = reflexify gradedReesPiece(-1 - dim R1, omegaS1List#0); --is that small enough?
+        degShift = (omegaS1List#1)#0; 
+        baseCanonical = reflexify gradedReesPiece(-1 - dim R1 + degShift, omegaS1List#0); --is that small enough?
         if (isInvertibleIdeal baseCanonical) then (
             tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
             tauOmegaS = tauOmegaSList#0;
-            --print tauOmegaS;
-            degShift = (omegaS1List#1)#0; 
+            --print tauOmegaS; 
             if (debugLevel >= 1) then print ("testIdeal (nonprincipal): degShift " | toString(degShift));
             --print degShift;
             answer = (gradedReesPiece(degShift, tauOmegaS)) : baseCanonical;
@@ -454,8 +454,7 @@ testIdeal(QQ, Ideal) := opts -> (n1, I1) -> (
             newPrinc := sub(first first entries gens ((ideal f^(torOrd#0)) : (torOrd#1)), S1);
             tauOmegaSList = testModule({1/(torOrd#0), n1}, {newPrinc, tvar}, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
             tauOmegaS = tauOmegaSList#0;
-            --print tauOmegaS;
-            degShift = (omegaS1List#1)#0; 
+            --print tauOmegaS; 
             if (debugLevel >= 1) then print ("testIdeal (nonprincipal): degShift " | toString(degShift));
             --print degShift;
             answer = (gradedReesPiece(degShift, tauOmegaS)) : ideal(f);
@@ -486,9 +485,9 @@ testModuleMinusEpsilon(QQ, Ideal) := opts -> (n1, I1) -> (
     omegaS1 := reesCanonicalModule(S1);
     --print "test1";
     omegaS1List := reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
-    baseCanonical := reflexify gradedReesPiece(-1, omegaS1List#0);
-    --if (not isInvertibleIdeal baseCanonical) then error "testIdealMinusEpsilonNP: expected a quasi-Gorenstein ambient ring";
     degShift := (omegaS1List#1)#0;
+    baseCanonical := reflexify gradedReesPiece(degShift-1 - dim R1, omegaS1List#0);
+    --if (not isInvertibleIdeal baseCanonical) then error "testIdealMinusEpsilonNP: expected a quasi-Gorenstein ambient ring";
     baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
     --print "test3";
     baseTau := baseTauList#0;
@@ -585,6 +584,79 @@ isFJumpingExponentModule(QQ, Ideal) := opts -> (n1, I1) -> (
 
 isFJumpingExponentModule(ZZ, Ideal) := opts -> (n1, I1) -> (
     isFJumpingExponentModule(n1/1, I1, opts)
+);
+
+isFRationalThreshold = method(Options =>{AssumeDomain => true, AtOrigin => false, FrobeniusRootStrategy => Substitution, Verbose=>false});
+
+isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
+    if opts.AssumeDomain == false then error "isFRationalThreshold: not yet implemented for the non-domain case";    
+    R1 := ring I1;
+    pp := char R1;
+    local computedHSLGInitial;
+    local computedHSLG;
+    local tauOmegaSList;
+    local answer1;
+    local answer2;    
+    local tauOmegaS;
+    S1 := extendedReesAlgebra(I1);
+    --print "testing";
+    tvar := S1#"InverseVariable";
+    omegaS1 := reesCanonicalModule(S1);
+    --print "test1";
+    omegaS1List := reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
+    degShift := (omegaS1List#1)#0;
+    baseOmega := reflexify gradedReesPiece(degShift - 1 - dim R1, omegaS1List#0);
+--    if not (gradedReesPiece(degShift, omegaS1List#0) == ideal(sub(1, R1))) then error "isFJumpingExponent (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
+    --print "test2";
+    baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
+    --print "test3";
+    baseTau := baseTauList#0;
+    genList := baseTauList#2;
+
+    --now we have to run the sigma computation
+    ( a1, b1, c1 ) := decomposeFraction( pp, n1, NoZeroC => true );
+    if (instance(genList, RingElement)) then (
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal => omegaS1List#0);
+        tauOmegaS = tauOmegaSList#0;        
+        answer1 = gradedReesPiece(degShift, tauOmegaS);
+        if (answer1 == tauOmegaSList#1) then (return false;);
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList } );
+        --print "test4";
+        computedHSLG = frobeniusRoot(b1, ceiling( ( pp^b1 - 1 )/( pp - 1 ) ), genList, sub(computedHSLGInitial, ambient S1));
+        --print "test5";
+        if (opts.Verbose) then print ("tau(a^t) is " | toString(answer1));
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);        
+        if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
+        if opts.AtOrigin then (            
+            return not( saturate(answer1) == saturate(answer2));
+        )
+        else( 
+            return not(answer1 == answer2);
+        );
+    )
+    else if instance(genList, BasicList) then ( -- Karl: I haven't tested this
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => genList, CanonicalIdeal => omegaS1List#0);
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => genList );
+        --print "test4";
+        computedHSLG = frobeniusRoot(b1, apply(#genList, zz -> ceiling( ( pp^b1 - 1 )/( pp - 1 ) )), genList, sub(computedHSLGInitial, ambient S1));
+        --print "test5";
+        tauOmegaS = tauOmegaSList#0;        
+        answer1 = gradedReesPiece(degShift, tauOmegaS);
+        if (opts.Verbose) then print ("tau(a^t) is " | toString(answer1));
+        answer2 = gradedReesPiece(degShift, computedHSLG*S1);
+        if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
+        if opts.AtOrigin then (
+            return not( saturate(answer1) == saturate(answer2));
+        )
+        else( 
+            return not(answer1 == answer2);
+        );
+    );
+    error "isFRationalThreshold (non-principal case): something went wrong with the generator list for the Fedder colon";
+);
+
+isFRationalThreshold(ZZ, Ideal) := opts -> (n1, I1) -> (
+    isFRationalThreshold(n1/1, I1);
 );
 
 --isFJumpingExponent is defined in FrobeniusThresholds
