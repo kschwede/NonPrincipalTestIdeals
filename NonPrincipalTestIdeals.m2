@@ -516,10 +516,11 @@ testModuleMinusEpsilon(ZZ, Ideal) := opts -> (n1, I1) -> (
     testModuleMinusEpsilon(n1/1, I1)
 )
 
-isFJumpingExponentModule = method(Options =>{AssumeDomain => true, AtOrigin => false, FrobeniusRootStrategy => Substitution, Verbose=>false});
+isFJumpingExponentModule = method(Options =>{ AtOrigin => false, FrobeniusRootStrategy => Substitution, Verbose=>false});
 
 isFJumpingExponentModule(QQ, Ideal) := opts -> (n1, I1) -> (
-    if opts.AssumeDomain == false then error "isFJumpingExponentModule: not yet implemented for the non-domain case";    
+    --if opts.AssumeDomain == false then error "isFJumpingExponentModule: not yet implemented for the non-domain case";    
+    if opts.Verbose then print ("Running isFJumpingExponentModule with AtOrigin => " | toString(opts.AtOrigin));
     R1 := ring I1;
     pp := char R1;
     local computedHSLGInitial;
@@ -545,17 +546,18 @@ isFJumpingExponentModule(QQ, Ideal) := opts -> (n1, I1) -> (
     --now we have to run the sigma computation
     ( a1, b1, c1 ) := decomposeFraction( pp, n1, NoZeroC => true );
     if (instance(genList, RingElement)) then (
-        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal => omegaS1List#0);
-        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList } );
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal => omegaS1List#0, FrobeniusRootStrategy=>opts.FrobeniusRootStrategy);
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList },FrobeniusRootStrategy=>opts.FrobeniusRootStrategy );
         --print "test4";
-        computedHSLG = frobeniusRoot(b1, ceiling( ( pp^b1 - 1 )/( pp - 1 ) ), genList, sub(computedHSLGInitial, ambient S1));
+        computedHSLG = frobeniusRoot(b1, ceiling( ( pp^b1 - 1 )/( pp - 1 ) ), genList, sub(computedHSLGInitial, ambient S1),FrobeniusRootStrategy=>opts.FrobeniusRootStrategy);
         --print "test5";
         tauOmegaS = tauOmegaSList#0;        
         answer1 = gradedReesPiece(degShift, tauOmegaS);
         if (opts.Verbose) then print ("tau(a^t) is " | toString(answer1));
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);        
         if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
-        if opts.AtOrigin then (            
+        if opts.AtOrigin then (        
+            1/0;    
             return not( saturate(answer1) == saturate(answer2));
         )
         else( 
@@ -563,10 +565,10 @@ isFJumpingExponentModule(QQ, Ideal) := opts -> (n1, I1) -> (
         );
     )
     else if instance(genList, BasicList) then ( -- Karl: I haven't tested this
-        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => genList, CanonicalIdeal => omegaS1List#0);
-        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => genList );
+        tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => genList, CanonicalIdeal => omegaS1List#0,FrobeniusRootStrategy=>opts.FrobeniusRootStrategy);
+        computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => genList, FrobeniusRootStrategy=>opts.FrobeniusRootStrategy);
         --print "test4";
-        computedHSLG = frobeniusRoot(b1, apply(#genList, zz -> ceiling( ( pp^b1 - 1 )/( pp - 1 ) )), genList, sub(computedHSLGInitial, ambient S1));
+        computedHSLG = frobeniusRoot(b1, apply(#genList, zz -> ceiling( ( pp^b1 - 1 )/( pp - 1 ) )), genList, sub(computedHSLGInitial, ambient S1), FrobeniusRootStrategy=>opts.FrobeniusRootStrategy);
         --print "test5";
         tauOmegaS = tauOmegaSList#0;        
         answer1 = gradedReesPiece(degShift, tauOmegaS);
@@ -574,6 +576,7 @@ isFJumpingExponentModule(QQ, Ideal) := opts -> (n1, I1) -> (
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);
         if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
         if opts.AtOrigin then (
+            1/0;
             return not( saturate(answer1) == saturate(answer2));
         )
         else( 
@@ -587,10 +590,10 @@ isFJumpingExponentModule(ZZ, Ideal) := opts -> (n1, I1) -> (
     isFJumpingExponentModule(n1/1, I1, opts)
 );
 
-isFRationalThreshold = method(Options =>{AssumeDomain => true, AtOrigin => false, FrobeniusRootStrategy => Substitution, Verbose=>false});
+isFRationalThreshold = method(Options =>{AtOrigin => false, FrobeniusRootStrategy => Substitution, Verbose=>false});
 
 isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
-    if opts.AssumeDomain == false then error "isFRationalThreshold: not yet implemented for the non-domain case";    
+    --if opts.AssumeDomain == false then error "isFRationalThreshold: not yet implemented for the non-domain case";    
     R1 := ring I1;
     pp := char R1;
     local computedHSLGInitial;
@@ -669,13 +672,13 @@ isFPT(ZZ, Ideal) := opts -> (n1, I1) ->(
 
 isFJumpingExponent(QQ, Ideal) := opts -> (n1, I1) -> (
     if opts.AssumeDomain == false then error "isFJumpingExponentModule: not yet implemented for the non-domain case";    
-    if (class ring I1 === PolynomialRing) then (  return isFJumpingExponentModule(n1, I1, AssumeDomain => opts.AssumeDomain, AtOrigin => opts.AtOrigin, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, Verbose=>opts.Verbose); );
+    if (class ring I1 === PolynomialRing) then (  return isFJumpingExponentModule(n1, I1, AtOrigin => opts.AtOrigin, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, Verbose=>opts.Verbose); );
      
     R1 := ring I1;
     
     baseCanonical := canonicalIdeal(R1);
     if (isInvertibleIdeal baseCanonical) then (
-        return isFJumpingExponentModule(n1, I1, AssumeDomain => opts.AssumeDomain, AtOrigin => opts.AtOrigin, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, Verbose=>opts.Verbose);
+        return isFJumpingExponentModule(n1, I1, AtOrigin => opts.AtOrigin, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, Verbose=>opts.Verbose);
     )
     else(
         torOrd := torsionOrder(opts.MaxCartierIndex, baseCanonical);
@@ -968,7 +971,7 @@ doc ///
         classicalReesAlgebra
         (classicalReesAlgebra, Ideal)
     Headline
-        flatten the Rees algebra of an ideal
+        compute the flattened the Rees algebra 
     Usage
         S = classicalReesAlgebra(J)
     Inputs
@@ -1002,7 +1005,7 @@ doc ///
         extendedReesAlgebra
         (extendedReesAlgebra, Ideal)
     Headline
-        compute the flattened extended Rees algebra of an ideal
+        compute the flattened extended Rees algebra
     Usage
         S = extendedReesAlgebra(J)
     Inputs
@@ -1056,6 +1059,45 @@ doc ///
         There is not a guarantee different calls to the function will always produce the same ambient canonical module.
     SeeAlso
         testModule
+///
+
+doc ///
+    Key
+        isFJumpingExponentModule
+        (isFJumpingExponentModule, QQ, Ideal)
+        (isFJumpingExponentModule, ZZ, Ideal)        
+        [isFJumpingExponentModule, AtOrigin]
+        [isFJumpingExponentModule,FrobeniusRootStrategy]
+        [isFJumpingExponentModule,Verbose]
+    Headline
+        decide if a rational number is a jumping exponent of a generalized parameter test module
+    Usage
+        b = isFJumpingExponentModule(t, J)
+    Inputs
+        t:QQ
+            the exponent
+        J:Ideal
+            the ideal of the pair
+    Outputs
+        b:Boolean
+    Description
+        Text
+            Given an ideal $J$ in a ring $R$ and a rational number $t$, this function determines if $\tau(\omega_R, J^t) \neq \tau(\omega_R, J^{t-\epsilon})$ for all $1 \gg \epsilon > 0$.  If so, it returns true, that is $t$ is a jumping exponent of $\tau(\omega_R, J^*)$, and otherwise it returns false.
+        Example
+            R = ZZ/5[x,y,z];
+            J = ideal(x^3,y^4,z^5);
+            isFJumpingExponent(1/3+1/4+1/5, J) -- should be true, this is the fpt = lct
+            isFJumpingExponent(1/3+1/4, J) -- should be false
+        Text
+            The option {\tt AtOrigin} (default) checks whether the jump happens is done at the origin (as opposed to anywhere).
+        Example
+            R = ZZ/3[x,y];
+            J = ideal(x-1,y);
+            isFJumpingExponentModule(2, J, AtOrigin=>false)
+            isFJumpingExponentModule(2, J, AtOrigin=>true)
+    SeeAlso
+        isFJumpingExponent
+        (isFPT, QQ, Ideal)
 ///
 
 
