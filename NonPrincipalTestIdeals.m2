@@ -751,7 +751,7 @@ beginDocumentation()
 document {
     Key => "NonPrincipalTestIdeals",
     Headline => "a package for calculations of singularities in positive characteristic ",
-	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in Q-Gorenstein rings, although some functions (checking for F-pure thresholds) are restricted to quasi-Gorenstein strongly F-regular domains.",
+	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in Q-Gorenstein rings, although some functions (such as checking for F-pure thresholds) are restricted to quasi-Gorenstein strongly F-regular domains.",
 	BR{}, BR{},
 	BOLD "Core functions",
 	UL {
@@ -968,7 +968,7 @@ doc ///
         classicalReesAlgebra
         (classicalReesAlgebra, Ideal)
     Headline
-        format the Rees algebra of an ideal
+        flatten the Rees algebra of an ideal
     Usage
         S = classicalReesAlgebra(J)
     Inputs
@@ -1002,7 +1002,7 @@ doc ///
         extendedReesAlgebra
         (extendedReesAlgebra, Ideal)
     Headline
-        format the Rees algebra of an ideal
+        compute the flattened extended Rees algebra of an ideal
     Usage
         S = extendedReesAlgebra(J)
     Inputs
