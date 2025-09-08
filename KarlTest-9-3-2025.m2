@@ -40,3 +40,9 @@ T = extendedReesAlgebra(m)
 reesCanonicalModule(S)
 loadPackage "NonPrincipalTestIdeals"
 reesCanonicalModule(T)
+
+
+loadPackage "NonPrincipalTestIdeals"
+R = ZZ/7[x,y,z]/ideal(x*y-z^2); --threshold should be 1
+J = ideal(x,y,z);
+isFPT(1/1,J)

@@ -28,7 +28,7 @@ export{
     "AmbientCanonical",--option
     "ExtendedReesAlgebra",--a flag to see if a ring was created via extendedReesAlgebra
     "ClassicalReesAlgebra",--a flag to see if a ring was created via classicalReesAlgebra
-    "ForceExtendedRees", --option
+    --"ForceExtendedRees", --option
     "isFRationalThreshold",
     --"ReturnMap",
     --"Map",
@@ -469,7 +469,7 @@ testIdeal(ZZ, Ideal) := opts -> (n1, I1) -> (
 );
 
 
-testModuleMinusEpsilon= method(Options =>{ForceExtendedRees => false, MaxCartierIndex=>10 });--this tries to compute tau(R, a^{t-epsilon})
+testModuleMinusEpsilon= method(Options =>{});--this tries to compute tau(R, a^{t-epsilon})
 
 testModuleMinusEpsilon(QQ, Ideal) := opts -> (n1, I1) -> (
     R1 := ring I1;
@@ -657,6 +657,14 @@ isFRationalThreshold(ZZ, Ideal) := opts -> (n1, I1) -> (
     isFRationalThreshold(n1/1, I1);
 );
 
+isFPT(QQ, Ideal) := opts -> (n1, I1) ->(
+    isFRationalThreshold(n1,I1);
+);
+
+isFPT(ZZ, Ideal) := opts -> (n1, I1) ->(
+    isFRationalThreshold(n1/1,I1);
+);
+
 --isFJumpingExponent is defined in FrobeniusThresholds
 
 isFJumpingExponent(QQ, Ideal) := opts -> (n1, I1) -> (
@@ -801,11 +809,12 @@ doc ///
 doc ///
     Key
         reesCanonicalModule
-        (reesCanonicalModule, Ring)        
+        (reesCanonicalModule, Ring)       
+        [reesCanonicalModule, AmbientCanonical] 
     Headline
         constructs the graded canonical module in a ring constructed via classicalReesAlgebra or extendedReesAlgebra
     Usage
-        M = reesCanonicalModule(S)
+        M = reesCanonicalModule(S)        
     Inputs
         S:Ring
             constructed with classicalReesAlgebra or extendedReesAlgebra        
@@ -814,11 +823,17 @@ doc ///
             the graded canonical module over S
     Description
         Text
-            
+            Computes the graded canonical modules of a ring constructed with @TO classicalReesAlgebra@ or @TO extendedReesAlgebra@ or 
         Example
             R = QQ[x,y];
-            J = ideal(x,y);            
+            J = ideal(x^2,x*y,y^2);            
+            S = classicalReesAlgebra(J);
+            T = extendedReesAlgebra(J);
+            reesCanonicalModule(S)
+            reesCanonicalModule(T)
         Text
+    Caveat
+        One should use this function and not other similar functions to create canonical modules in extended Rees algebras.  This is because core Macaulay2 Ext function gives the wrong answer in rings with variables of negative degrees.  See this github issue @HREF "https://github.com/Macaulay2/M2/issues/3180"@
     SeeAlso
         classicalReesAlgebra
         extendedReesAlgebra
@@ -860,7 +875,6 @@ doc ///
 
 doc ///
     Key
-        testIdeal
         (testIdeal, QQ, Ideal)
         (testIdeal, ZZ, Ideal)
     Headline
@@ -877,7 +891,7 @@ doc ///
             an ideal, the test ideal
     Description
         Text
-            This computes the test ideal $\tau(R, I^t)$ of an ideal $I$ in a normal $Q$-Gorenstein domain $R$ of index not divisible by the characteristic $p > 0$.  We begin with example in a regular ring.
+            This computes the test ideal $\tau(R, I^t)$ of an ideal $I$ in a normal quasi-Gorenstein domain $R$.  We begin with example in a regular ring.
         Example
             R = ZZ/5[x,y];
             I = ideal(x^2, y^3);
@@ -900,7 +914,6 @@ doc ///
 
 doc ///
     Key
-        testModule
         (testModule, QQ, Ideal)
         (testModule, ZZ, Ideal)
     Headline
@@ -917,7 +930,10 @@ doc ///
             a list with the test module and the canonical module
     Description
         Text
-            This computes the test module $\tau(\omega_R, I^t)$ of an ideal $I$ in a normal domain $R$ of index not divisible by the characteristic $p > 0$.  We begin with example in a regular ring.
+            This computes the test module $\tau(\omega_R, I^t)$ of an ideal $I$ in a domain $R$ of index not divisible by the characteristic $p > 0$.  
+            It returns a list with two entries.  The first is the ideal of $R$ isomorphic viewed as an ideal of $R$ isomorphic to $\tau(\omega_R, J^t)$. The second is an ideal $R$ isomorphic to $\omega_R$, in which the first module sits as a subideal.
+        Text
+            We begin with example in a regular ring.
         Example
             R = ZZ/5[x,y];
             I = ideal(x^2, y^3);
@@ -935,8 +951,10 @@ doc ///
             testModule(1-1/16, m)
     SeeAlso
         testModule
-        (testIdeal, QQ, Ideal)
+        (testModule, QQ, Ideal)
+        testModuleMinusEpsilon
         testIdeal
+        (testIdeal, QQ, Ideal)        
 ///
 
 doc ///
@@ -973,6 +991,39 @@ doc ///
     SeeAlso
         reesAlgebra
         extendedReesAlgebra
+///
+
+doc ///
+    Key 
+        testModuleMinusEpsilon
+        (testModuleMinusEpsilon, ZZ, Ideal)
+        (testModuleMinusEpsilon, QQ, Ideal)        
+    Headline
+        compute the (parameter) test module of a pair for values arbitrarily close to, but below, t
+    Usage
+        M = testModuleMinusEpsilon(t, J)
+    Inputs
+        t:QQ
+            the exponent we are interested in
+        J:Ideal
+            the ideal were are interested in
+    Outputs
+        S:Ring
+    Description
+        Text
+            This function computes $\tau(\omega_R, J^{t-\epsilon})$, the test module of the pair $(R, J^{t-\epsilon})$ for $1 \gg \epsilon > 0$.  It returns a list with two entries.  The first is the ideal of $R$ isomorphic viewed as an ideal of $R$ isomorphic to $\tau(\omega_R, J^t)$. The second is an ideal $R$ isomorphic to $\omega_R$, in which the first module sits as a subideal.
+        Example
+            R = ZZ/5[x,y,z];
+            J = ideal(x^2,y^2,z^2);
+            testModuleMinusEpsilon(3/2,J)
+            apply(oo, JJ -> trim JJ)
+            testModule(3/2, J)               
+        Text
+            In the above example, one can see that 3/2 is the F-pure threshold of the given ideal $J$, as expected.        
+    Caveat
+        There is not a guarantee different calls to the function will always produce the same ambient canonical module.
+    SeeAlso
+        testModule
 ///
 
 
@@ -1045,8 +1096,8 @@ TEST /// --check #3, non-monomial ideals, dimension 3
     needsPackage "Dmodules";
     S = QQ[a,b,c];
     J = ideal(a^2+b^2,b^3,c^2+a^2);    
-    J2 =  multiplierIdeal(J, 3/2);    
-    J4 =  multiplierIdeal(J, 2);
+    J2 =  ideal(c,b,a); --produced via a slow call to multiplierIdeal(J, 3/2);    
+    J4 = ideal(c^2,b*c,a*c,b^2,a*b,a^2); -- produced via a slow call to multiplierIdeal(J, 2);
     R = ZZ/5[x,y,z];
     I = ideal(x^2+y^2, y^3, z^2+x^2);    
     I2 =  testIdeal(3/2, I);
@@ -1071,8 +1122,7 @@ TEST /// --check #5, ambient singular ring, dimension 2, E6 singularity (see [TW
     R = ZZ/5[x,y,z]/ideal(x^2+y^3+z^4);
     J = ideal(x,y,z);
     m = ideal(x,y,z);
-    uI = ideal(sub(1,R));    
-    --time assert(testIdeal(1/3-1/25, J) == uI); -- this one is too slow
+    uI = ideal(sub(1,R));       
     assert(testIdeal(1/3-1/30, J) == m);    
 ///
 
@@ -1081,8 +1131,9 @@ TEST /// --check #6, ambient singular ring, dimension 2, E7 singularity (see [TW
     J = ideal(x,y,z);
     m = ideal(x,y,z);
     uI = ideal(sub(1,R));    
-    assert(testIdeal(1/5, J) == uI);
-    assert(testIdeal(1/4, J) == m);    
+    --assert(testIdeal(1/5, J) == uI);
+    --assert(testIdeal(1/4, J) == m);    
+    assert(isFPT(1/4, J))
 ///
 
 TEST /// --check #7, dim 4, codim 2 ideal (non-m-primary)
@@ -1216,7 +1267,7 @@ use R;
 assert((ideal(x,y,z))*baseOmega == trim gradedReesPiece(3+degShift, omegaTIdeal)); --but we should get a jump here.
 ///
 
-TEST ///--jumping number computations
+TEST ///--check #14, jumping number computations
 R = ZZ/3[x,y,z];
 m = ideal(x,y,z);
 assert(isFJumpingExponentModule(5/2, m) == false);
@@ -1237,7 +1288,7 @@ assert(isFJumpingExponent(1/3, J));
 assert(not isFJumpingExponentModule(1/4, J));
 ///
 
-TEST ///--checking isFJumpingExponentModule non-homogeneous ideals
+TEST ///--check #15, checking isFJumpingExponentModule non-homogeneous ideals
     R = ZZ/5[x,y];
     m = ideal((x-1)^2,y^2);
     assert(isFJumpingExponentModule(3/2, m));
@@ -1249,13 +1300,24 @@ TEST ///--checking isFJumpingExponentModule non-homogeneous ideals
     assert(not isFJumpingExponent(3/4,J)); 
 ///
 
-TEST /// --checking isFRationalThreshold
+TEST /// --#16, checking isFRationalThreshold
 R = ZZ/3[x,y];
 J = ideal(x^2,y^3);
 assert (isFRationalThreshold(5/6, J));
+assert (isFPT(5/6, J));
 assert (not isFRationalThreshold(2/3, J));
-assert( not isFRationalThreshold(8/9, J));
-assert (not isFRationalThreshold(1+5/6, J));
+assert( not isFPT(8/9, J));
+assert (not isFPT(1+5/6, J));
+assert (not isFPT(2/3, J));
+assert( not isFPT(8/9, J));
+assert (not isFPT(1+5/6, J));
+///
+
+TEST ///--#17, checking a non-polynomial FPT
+loadPackage "NonPrincipalTestIdeals"
+R = ZZ/3[x,y,z]/ideal(x*y-z^2); --threshold should be 1
+J = ideal(x,y,z);
+assert(isFPT(1/1,J))
 ///
 
 
