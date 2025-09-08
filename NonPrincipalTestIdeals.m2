@@ -751,7 +751,7 @@ beginDocumentation()
 document {
     Key => "NonPrincipalTestIdeals",
     Headline => "a package for calculations of singularities in positive characteristic ",
-	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in quasi-Gorenstein domains.",
+	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in Q-Gorenstein rings, although some functions (checking for F-pure thresholds) are restricted to quasi-Gorenstein strongly F-regular domains.",
 	BR{}, BR{},
 	BOLD "Core functions",
 	UL {
@@ -843,7 +843,8 @@ doc ///
 doc ///
     Key
         reesModuleToIdeal
-        (reesModuleToIdeal, Ring, Module)        
+        (reesModuleToIdeal, Ring, Module)    
+        [reesModuleToIdeal, MTries]    
     Headline
         embeds a homogeneous rank 1 module as an ideal in a Rees algebra
     Usage
@@ -862,11 +863,16 @@ doc ///
             the map M to S^1 whose image is I
     Description
         Text
-            
+            In the following example we embed the canonical module of an extended Rees algebra and then embed it as an ideal.  Note there is a degree shift.
         Example
             R = QQ[x,y];
-            J = ideal(x,y);            
+            J = ideal(x^2,x*y^2,y^3);            
+            S = extendedReesAlgebra(J);
+            canMod = reesCanonicalModule(S)
+            L = reesModuleToIdeal(S, canMod) --the first entry -1 of {-1,-2} refers to the Rees algebra degree
+            L#2 -- the map from canMod to S 
         Text
+            The {\tt MTries} option specifies how many attempts to make before giving up.
     SeeAlso
         classicalReesAlgebra
         extendedReesAlgebra
@@ -960,6 +966,7 @@ doc ///
 doc ///
     Key 
         classicalReesAlgebra
+        (classicalReesAlgebra, Ideal)
     Headline
         format the Rees algebra of an ideal
     Usage
@@ -981,9 +988,6 @@ doc ///
             S2 = classicalReesAlgebra J;
             describe S2
             degrees S2
-            S2#"BaseRing"
-            S2#"Degree1"
-            S2#"BaseRingList"
         Text
             BaseRing provides the ring where we blew up the ideal.  Degree1 is the generators of the degree 1 part of the Rees algebra.  BaseRingList is the list of generators of the ideal we blew up. 
     Caveat
@@ -991,6 +995,34 @@ doc ///
     SeeAlso
         reesAlgebra
         extendedReesAlgebra
+///
+
+doc ///
+    Key 
+        extendedReesAlgebra
+        (extendedReesAlgebra, Ideal)
+    Headline
+        format the Rees algebra of an ideal
+    Usage
+        S = extendedReesAlgebra(J)
+    Inputs
+        J:Ideal
+    Outputs
+        S:Ring
+    Description
+        Text
+            This function creates an extended Rees algebra.  Unlike the reesAlgebra command, this function creates a flattened ring with certain other keys added for the convenience of other functions in this package.        
+        Example
+            R = QQ[x,y,z];
+            J= ideal(x^2,y);
+            S2 = extendedReesAlgebra J;
+            describe S2
+            degrees S2        
+    Caveat
+        Currently, this only works for singly graded base rings.
+    SeeAlso
+        reesAlgebra
+        classicalReesAlgebra
 ///
 
 doc ///
