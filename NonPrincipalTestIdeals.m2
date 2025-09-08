@@ -529,6 +529,8 @@ isFJumpingExponentModule(QQ, Ideal) := opts -> (n1, I1) -> (
     local answer1;
     local answer2;    
     local tauOmegaS;
+    local newAnn;
+    local maxIdeal;
     S1 := extendedReesAlgebra(I1);
     --print "testing";
     tvar := S1#"InverseVariable";
@@ -557,8 +559,9 @@ isFJumpingExponentModule(QQ, Ideal) := opts -> (n1, I1) -> (
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);        
         if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
         if opts.AtOrigin then (        
-            1/0;    
-            return not( saturate(answer1) == saturate(answer2));
+            newAnn = ann(answer2*R1^1/(answer2*R1^1));
+            maxIdeal = ideal gens R1;
+            return isSubset(newAnn, maxIdeal);
         )
         else( 
             return not(answer1 == answer2);
@@ -576,8 +579,9 @@ isFJumpingExponentModule(QQ, Ideal) := opts -> (n1, I1) -> (
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);
         if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
         if opts.AtOrigin then (
-            1/0;
-            return not( saturate(answer1) == saturate(answer2));
+            newAnn = ann(answer2*R1^1/(answer2*R1^1));
+            maxIdeal = ideal gens R1;
+            return isSubset(newAnn, maxIdeal);
         )
         else( 
             return not(answer1 == answer2);
