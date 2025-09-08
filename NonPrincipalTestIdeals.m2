@@ -1398,6 +1398,13 @@ J = ideal(x,y,z);
 assert(isFPT(1/1,J))
 ///
 
+TEST ///--#18, checking AtOrigin
+    R = ZZ/3[x,y];
+    J = ideal(x-1,y);
+    assert(isFJumpingExponentModule(2, J, AtOrigin=>false));
+    assert(not isFJumpingExponentModule(2, J, AtOrigin=>true));
+///
+
 
 end--
 loadPackage "NonPrincipalTestIdeals"
