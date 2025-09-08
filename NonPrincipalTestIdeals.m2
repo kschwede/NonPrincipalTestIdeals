@@ -3,7 +3,7 @@ newPackage(
     Version => "0.0",
     Date => "September 6th, 2025",
     Authors => {{Name => "Rahul Ajit", Email => "rahul.ghosh@utah.edu", HomePage => ""},
-        {Name => "Matthew Bertucci", Email => "bertucci@math.utah.edu", HomePage => ""}, 
+        {Name => "Matthew Bertucci", Email => "mbertucci@willamette.edu", HomePage => ""}, 
         {Name => "Trung Chau", Email => "trung.chau@utah.edu", HomePage => ""}, 
         {Name => "Karl Schwede", Email => "schwede@math.utah.edu", HomePage => ""},
         {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => ""}},
@@ -751,7 +751,7 @@ beginDocumentation()
 document {
     Key => "NonPrincipalTestIdeals",
     Headline => "a package for calculations of singularities in positive characteristic ",
-	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.",
+	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in quasi-Gorenstein domains.",
 	BR{}, BR{},
 	BOLD "Core functions",
 	UL {
