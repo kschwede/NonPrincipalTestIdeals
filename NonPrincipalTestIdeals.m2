@@ -109,7 +109,7 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
         ambcan = o.AmbientCanonical;
         --print (degrees ambcan);
     );    
-	--M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
+    --M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
     M1 := (manualExt(dS - dR,S1^1/I1, ambcan))**R1
 )
 
@@ -1141,10 +1141,15 @@ doc ///
         Text
            Given two modules $N$ and $P$ over a ring $R$ and an integer $t$, this function computes and returns ${Ext}_R^t(N,P)$.
         Example
-            R = S = QQ[X,T,Degrees=>{1,-1}]
-            N = S^1/ideal(X*T-1)
-            P = S^1
-            manualExt(1, N, P)           
+            R = ZZ/5[x,y];
+            m = ideal((x-1)^2,y^2);
+            T = extendedReesAlgebra(m);
+            describe T
+            degrees T
+            S = ambient T;
+            I = ideal T;
+            dim Ext^2(S^1/I, S^{{-2,0}})
+            
     SeeAlso
         Ext        
 ///
