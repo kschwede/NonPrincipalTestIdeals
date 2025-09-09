@@ -109,7 +109,8 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
         ambcan = o.AmbientCanonical;
         --print (degrees ambcan);
     );    
-	--M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
+    --print "doing classical Ext";
+    --M1 := (Ext^(dS - dR)(S1^1/I1, ambcan))**R1
     M1 := (manualExt(dS - dR,S1^1/I1, ambcan))**R1
 )
 
