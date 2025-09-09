@@ -599,6 +599,7 @@ isFRationalThreshold = method(Options =>{AtOrigin => false, FrobeniusRootStrateg
 
 isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
     --if opts.AssumeDomain == false then error "isFRationalThreshold: not yet implemented for the non-domain case";    
+    if opts.Verbose then print ("isFRationalThreshold: starting " | toString(I1) | "^" | toString n1);
     R1 := ring I1;
     pp := char R1;
     local computedHSLGInitial;
@@ -617,6 +618,7 @@ isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
     omegaS1List := reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
     baseOmega := reflexify gradedReesPiece(degShift - 1 - dim R1, omegaS1List#0);
+    if opts.Verbose then print ("ambient canonical module " | toString(baseOmega));
 --    if not (gradedReesPiece(degShift, omegaS1List#0) == ideal(sub(1, R1))) then error "isFJumpingExponent (non-principal case): not yet implemented for non(-obviously-)quasi-Gorenstein rings";--in the future, do some more work in this case to handle the Q-Gorenstein setting.   
     --print "test2";
     baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
@@ -626,21 +628,23 @@ isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
 
     --now we have to run the sigma computation
     ( a1, b1, c1 ) := decomposeFraction( pp, n1, NoZeroC => true );
+    if opts.Verbose then print "Considering the Cartier action on omega";
     if (instance(genList, RingElement)) then (
+        if opts.Verbose then print ("isFRationalThreshold : Macaulay2 can see that the test module Cartier action is principal: " | toString(genList));
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal => omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;        
         answer1 = gradedReesPiece(degShift, tauOmegaS);
+        if opts.Verbose then print ("test module at t :" | toString(answer1));
         --if opts.AtOrigin then answer1 = saturate(answer1);
-        if (answer1 == baseOmega) then (return false;);
+        if (answer1 == baseOmega) then (return 1==0);
         computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList } );
         --print "test4";
         computedHSLG = frobeniusRoot(b1, ceiling( ( pp^b1 - 1 )/( pp - 1 ) ), genList, sub(computedHSLGInitial, ambient S1));
-        --print "test5";
-        if (opts.Verbose) then print ("tau(a^t) is " | toString(answer1));
+        --print "test5";        
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);   
+        if opts.Verbose then print ("test module at t-epsilon :" | toString(answer2));
         --if opts.AtOrigin then answer2 = saturate(answer2); 
-        if  not (answer2 == baseOmega) then (return false;);    
-        if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
+        if  not (answer2 == baseOmega) then (return false;);            
         if opts.AtOrigin then (
             newAnn = ann(answer2*R1^1/(answer2*R1^1));
             maxIdeal = ideal gens R1;
@@ -651,6 +655,7 @@ isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
         );
     )
     else if instance(genList, BasicList) then ( -- Karl: I haven't tested this
+        if opts.Verbose then print ("isFRationalThreshold : Macaulay2 failed to see that the test module Cartier action is principal: " | toString(genList));
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => genList, CanonicalIdeal => omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;        
         answer1 = gradedReesPiece(degShift, tauOmegaS);
@@ -678,16 +683,10 @@ isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
 );
 
 isFRationalThreshold(ZZ, Ideal) := opts -> (n1, I1) -> (
-    isFRationalThreshold(n1/1, I1);
+    isFRationalThreshold(n1/1, I1, opts)
 );
 
-isFPT(QQ, Ideal) := opts -> (n1, I1) ->(
-    isFRationalThreshold(n1,I1);
-);
 
-isFPT(ZZ, Ideal) := opts -> (n1, I1) ->(
-    isFRationalThreshold(n1/1,I1);
-);
 
 --isFJumpingExponent is defined in FrobeniusThresholds
 
@@ -713,8 +712,16 @@ isFJumpingExponent(ZZ, Ideal) := opts -> (n1, I1) -> (
     isFJumpingExponent(n1/1, I1, opts)
 );
 
---isFPT = method(Options)
+isFPT(QQ, Ideal) := opts -> (n1, I1) ->(    
+    isFRationalThreshold(n1,I1, AtOrigin => opts.AtOrigin, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, Verbose=>opts.Verbose)
+);
 
+isFPT(ZZ, Ideal) := opts -> (n1, I1) ->(    
+    isFRationalThreshold(n1/1,I1, AtOrigin => opts.AtOrigin, FrobeniusRootStrategy => opts.FrobeniusRootStrategy, Verbose=>opts.Verbose)
+);
+
+--isFPT = method(Options)
+-*
 isFPT(QQ, Ideal) := opts -> (n1, I1) -> (
      R1 := ring I1;
     pp := char R1;
@@ -769,6 +776,7 @@ isFPT(QQ, Ideal) := opts -> (n1, I1) -> (
     );
     error "isFPT (non-principal case): something went wrong with the generator list for the Fedder colon";
 );
+*-
 
 beginDocumentation()
 
@@ -1183,6 +1191,51 @@ doc ///
 ///
 
 doc ///
+    Key
+        isFRationalThreshold
+        (isFRationalThreshold, QQ, Ideal)
+        (isFRationalThreshold, ZZ, Ideal)
+        (isFPT, QQ, Ideal)
+        (isFPT, ZZ, Ideal)
+        [isFRationalThreshold, AtOrigin]
+        [isFRationalThreshold, FrobeniusRootStrategy]
+        [isFRationalThreshold, Verbose]
+    Headline
+        determines if a given number is the F-rational threshold, or, equivalently in the case of a quasi-Gorenstein ring, the F-pure threshold
+    Usage
+        b = isFRationalThreshold(t, I)
+        b = isFPT(t,I)
+    Inputs 
+        t: QQ
+            the number which might equal the threshold
+        I: Ideal
+            the ideal whose threshold you want to compute
+    Outputs
+        b: Boolean
+            is it the threshold or not
+    Description
+        Text
+            Given an ideal $I$ in a domain $R$, this determines whether a rational $t$ is the $F$-rational threshold, that is whether or not $\tau(\omega_R, I^t) \neq \omega_R$ while $\tau(\omega_R, I^{t-\epsilon}) = \omega_R$.  In the case of a quasi-Gorenstein strongly $F$-regular ring (ie, if $\omega_R$ is an invertible ideal, for instance if its principal), this is equivalent to the $F$-pure threshold of $(R, I)$.  Hence, you may also call {\tt isFPT(R, I)} in that case.
+        Example
+            R = ZZ/3[x,y,z];
+            I = ideal(x^2,y^3,z^5); --fpt should be 1/2 + 1/3 + 1/5 = 31/30
+            isFPT(31/30, I)
+            isFRationalThreshold(31/30, I)
+            isFRationalThreshold(1, I)
+            isFPT(32/30, I)
+        Text
+            The option {\tt AtOrigin} says that the computation must only be checked at the origin.
+        Example
+            R = ZZ/3[u,v]
+            I = ideal( (u-1)^2, v^3) --fpt should be 1/2+1/3 = 5/6, but it's not the threshold at the origin
+            isFPT(5/6, I)
+            isFRationalThreshold(5/6, I, AtOrigin=>true)
+        Text
+            The {\tt Verbose} option turns on debugging output if true.  The option {\tt FrobeniusRootStrategy} is passed on to the {\tt TestIdealsPackage}.
+    SeeAlso
+        isFPT
+        isFJumpingExponent
+        isFJumpingExponentModule
 
 ///
 
@@ -1484,6 +1537,22 @@ TEST ///--#18, checking AtOrigin
     J = ideal(x-1,y);
     assert(isFJumpingExponentModule(2, J, AtOrigin=>false));
     assert(not isFJumpingExponentModule(2, J, AtOrigin=>true));
+///
+
+TEST ///--#19, checking various outputs
+    R = ZZ/2[x,y,z];
+    I = ideal(x^2,y^5,z^7); --fpt should be 1/2 + 1/5 + 1/7 = 59/70
+    assert(isFPT(59/70, I))
+    assert(isFRationalThreshold(59/70, I))
+    assert(not isFRationalThreshold(1, I))
+    assert(not isFPT(58/70, I))
+///
+
+TEST /// --#20, more checking AtOrigin
+R = ZZ/3[u,v]
+I = ideal( (u-1)^2, v^3) --fpt should be 1/2+1/3 = 5/6, but it's not the threshold at the origin
+assert(isFPT(5/6, I))
+assert(not isFRationalThreshold(5/6, I, AtOrigin=>true))
 ///
 
 
