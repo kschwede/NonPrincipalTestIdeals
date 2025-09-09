@@ -607,6 +607,7 @@ isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
     local answer2;    
     local tauOmegaS;
     S1 := extendedReesAlgebra(I1);
+    local maxIdeal;
     --print "testing";
     tvar := S1#"InverseVariable";
     omegaS1 := reesCanonicalModule(S1);
@@ -627,7 +628,7 @@ isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => {genList}, CanonicalIdeal => omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;        
         answer1 = gradedReesPiece(degShift, tauOmegaS);
-        if opts.AtOrigin then answer1 = saturate(answer1);
+        --if opts.AtOrigin then answer1 = saturate(answer1);
         if (answer1 == baseOmega) then (return false;);
         computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => { genList } );
         --print "test4";
@@ -635,16 +636,23 @@ isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
         --print "test5";
         if (opts.Verbose) then print ("tau(a^t) is " | toString(answer1));
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);   
-        if opts.AtOrigin then answer2 = saturate(answer2); 
+        --if opts.AtOrigin then answer2 = saturate(answer2); 
         if  not (answer2 == baseOmega) then (return false;);    
         if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2));
-        return not(answer1 == answer2);
+        if opts.AtOrigin then (
+            newAnn = ann(answer2*R1^1/(answer2*R1^1));
+            maxIdeal = ideal gens R1;
+            return isSubset(newAnn, maxIdeal);
+        )
+        else (
+            return not(answer1 == answer2);
+        );
     )
     else if instance(genList, BasicList) then ( -- Karl: I haven't tested this
         tauOmegaSList = testModule(n1, tvar, AssumeDomain=>true, GeneratorList => genList, CanonicalIdeal => omegaS1List#0);
         tauOmegaS = tauOmegaSList#0;        
         answer1 = gradedReesPiece(degShift, tauOmegaS);
-        if opts.AtOrigin then answer1 = saturate(answer1);
+        --if opts.AtOrigin then answer1 = saturate(answer1);
         if (answer1 == baseOmega) then (return false;);
         computedHSLGInitial = first FPureModule( { a1/( pp^c1 - 1 ) }, { tvar }, CanonicalIdeal => baseTau, GeneratorList => genList );
         --print "test4";
@@ -652,10 +660,17 @@ isFRationalThreshold(QQ, Ideal) := opts -> (n1, I1) -> (
         --print "test5";
         if (opts.Verbose) then print ("tau(a^t) is " | toString(answer1));
         answer2 = gradedReesPiece(degShift, computedHSLG*S1);
-        if opts.AtOrigin then answer2 = saturate(answer2);
+        --if opts.AtOrigin then answer2 = saturate(answer2);
         if  not (answer2 == baseOmega) then (return false;);    
         if (opts.Verbose) then print ("tau(a^(t-epsilon)) is " | toString(answer2)); 
-        return not(answer1 == answer2);
+        if opts.AtOrigin then (
+            newAnn = ann(answer2*R1^1/(answer2*R1^1));
+            maxIdeal = ideal gens R1;
+            return isSubset(newAnn, maxIdeal);
+        )
+        else (
+            return not(answer1 == answer2);
+        );
     );
     error "isFRationalThreshold (non-principal case): something went wrong with the generator list for the Fedder colon";
 );
