@@ -58,13 +58,7 @@ torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
 );
 
 
-manualExt = method(Options=>{}); --the current implementation of Ext does not work if rings have negatively graded variables.  We do it manually instead.
-
-manualExt(ZZ,Module,Module):= (Module) => opts -> (n1, M1, M2) -> (
-    myRes := resolution(M1); --, DegreeLimit => n1+1); --get weird errors
-    myResHom := Hom(myRes, M2);
-    HH^n1(myResHom)
-);
+e
 
 --the degress need to be fixed to work with extended Rees algebras
 --KARL is looking at if this is correct right now.
@@ -1118,7 +1112,54 @@ doc ///
         isFJumpingExponent
         (isFPT, QQ, Ideal)
 ///
-
+doc ///
+    Key
+        manualExt
+        (manualExt, ZZ, Module, Module)
+    Headline
+        This function computes the Ext module of two given modules. The usual function Ext does not work correctly when rings have negatively graded variables.
+    Usage
+        M = manualExt(t, N, P)
+    Inputs
+        t:ZZ
+            the homological degree
+        N, P: Module
+            the given two modules
+    Outputs
+        M: Module
+    Description
+        Text
+            Given two modules $N$ and $P$ over a ring $R$ and an integer $t$, this function computes and returns $\operatorname{Ext}_r^t(N,P)$.
+        Example
+            R = ZZ/5[x,y,z,Degrees=>{1,2,-3}]/ideal(x^4*z-x,y^3*z-x^3);
+            N = module ideal(x^3,y^4,z^5);
+	        P = module ideal(x,y,z);
+            manualExt(1, N, P)
+    SeeAlso
+        Ext
+        (ZZ, Module, Module)
+///
+doc ///
+    Key
+        isInvertibleIdeal
+        (isInvertibleIdeal, Ideal)
+    Headline
+        This function checks whether an ideal is locally principal. It returns true if the ideal is, and false otherwise.
+    Usage
+        b = isInvertibleIdeal(I)
+    Inputs
+        I: Ideal
+    Outputs
+        b: Boolean
+    Description
+        Text
+            Given an ideal $I$, this function returns true if $I$ is locally principal, and false otherwise.
+        Example
+            R = QQ[w..z]/ideal(x*y,x*z,y*z,x^2-y^2,x^2-z^2);
+            isInvertibleIdeal(ideal(w,x)) -- should be false
+	        isInvertibleIdeal(ideal(x,y,z)) -- should be true, as locally this ideal is the entire ring
+    SeeAlso
+///
 
 TEST /// --check #0, monomial ideals, dimension 2
     needsPackage "MultiplierIdeals";
