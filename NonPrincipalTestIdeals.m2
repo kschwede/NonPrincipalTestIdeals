@@ -61,7 +61,7 @@ torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
 manualExt = method(Options=>{}); --the current implementation of Ext does not work if rings have negatively graded variables.  We do it manually instead.
 
 manualExt(ZZ,Module,Module):= (Module) => opts -> (n1, M1, M2) -> (
-    myRes := resolution(M1); --, DegreeLimit => n1+1); --get weird errors
+    myRes := resolution(M1, LengthLimit =>n1+1); --, DegreeLimit => n1+1); --get weird errors
     myResHom := Hom(myRes, M2);
     HH^n1(myResHom)
 );
@@ -1125,7 +1125,7 @@ doc ///
         manualExt
         (manualExt, ZZ, Module, Module)
     Headline
-        compute the Ext module of two modules as the core Ext function does not work properly in the negatively graded case
+        compute the Ext module of two modules as the core Ext function sometimes does not work properly in the negatively graded case
     Usage
         M = manualExt(t, N, P)
     Inputs
@@ -1141,10 +1141,10 @@ doc ///
         Text
            Given two modules $N$ and $P$ over a ring $R$ and an integer $t$, this function computes and returns ${Ext}_R^t(N,P)$.
         Example
-            R = ZZ/5[x,y,z,Degrees=>{1,2,-3}]/ideal(x^4*z-x,y^3*z-x^3);
-            N = module ideal(x^3,y^4,z^5);
-            P = module ideal(x,y,z);
-            manualExt(1, N, P)
+            R = S = QQ[X,T,Degrees=>{1,-1}]
+            N = S^1/ideal(X*T-1)
+            P = S^1
+            manualExt(1, N, P)           
     SeeAlso
         Ext        
 ///
