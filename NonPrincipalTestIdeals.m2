@@ -857,7 +857,7 @@ doc ///
             reesCanonicalModule(T)
         Text
     Caveat
-        One should use this function and not other similar functions to create canonical modules in extended Rees algebras.  This is because core Macaulay2 Ext function gives the wrong answer in rings with variables of negative degrees.  See this github issue @HREF "https://github.com/Macaulay2/M2/issues/3180"@
+        One should use this function and not other similar functions to create canonical modules in extended Rees algebras, especially in older versions of Macaulay2.  This is because core Macaulay2 Ext function sometimes gives the wrong answer in rings with variables of negative degrees.  See this github issue @HREF "https://github.com/Macaulay2/M2/issues/3180"@
     SeeAlso
         classicalReesAlgebra
         extendedReesAlgebra
