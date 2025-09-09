@@ -1167,10 +1167,23 @@ doc ///
         Text
             Given an ideal $I$, this function returns true if $I$ is locally principal, and false otherwise.
         Example
+            R = QQ[x,y]/(y^2-x*(x-1)*(x+1)); --an elliptic curve
+            I = ideal(x,y); --corresponding to a point, should be invertible, even if not principal
+            isInvertibleIdeal(I)--should be true
+            S = QQ[u,v];
+            J = ideal(u,v);
+            isInvertibleIdeal(J) --should be false
+        Text
+            This frequently also works in non-domains.  
+        Example
             R = QQ[w..z]/ideal(x*y,x*z,y*z,x^2-y^2,x^2-z^2);
             isInvertibleIdeal(ideal(w,x)) -- should be false
-	        isInvertibleIdeal(ideal(x,y,z)) -- should be true, as locally this ideal is the entire ring
+            isInvertibleIdeal(ideal(x,y,z)) -- should be true
     SeeAlso
+///
+
+doc ///
+
 ///
 
 TEST /// --check #0, monomial ideals, dimension 2
