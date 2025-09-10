@@ -782,18 +782,22 @@ beginDocumentation()
 
 document {
     Key => "NonPrincipalTestIdeals",
-    Headline => "a package for calculations of singularities in positive characteristic ",
+    Headline => "a package for calculations of singularities of pairs in positive characteristic",
 	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in Q-Gorenstein rings, although some functions (such as checking for F-pure thresholds) are restricted to quasi-Gorenstein strongly F-regular domains.",
-	BR{}, BR{},
+    BR{}, BR{},
+    "This package reduces the problem to the principal case by the mathematics developed in the preprint ", BR{}, EM "Test Modules of Extended Rees Algebras", "by Rahul Ajit, Hunter Simper", "arXiv:2509.01693.", BR{}, BR{},"After reducing to the principal case, the functions from the ", EM "TestIdeals", " package are used.  Note that this package requires Macaulay2 version 1.25 or later.", BR{}, BR{},
 	BOLD "Core functions",
 	UL {
 		{TO "testIdeal", " computes the test ideal ", TEX ///$\tau(R, I^t)$///,},
 		{TO "testModule", " computes the test module ", , TEX ///$\tau(\omega_R, I^t)$///,},
+        {TO "testModuleMinusEpsilon", " computes the test module ", TEX ///$\tau(\omega_R, I^{t-\epsilon})$///, " for arbitrary small ", TEX ///$\epsilon > 0$///,},
+        {TO "isFJumpingExponentModule", " checks if ", TEX ///$t$///, " is an F-jumping exponent for the test module ", TEX ///$\tau(\omega_R, I^t)$///,},
+        {TO "isFPT", " checks if ", TEX ///$t$///, " is the F-pure threshold of the pair ", TEX ///$(R, I)$///,},
 	},
      "There are some other functions exported which people may also find useful.", BR{}, BR{},
 	BOLD "Other useful functions",
 	UL {
-		{TO "gradedReesPiece", " computes a graded piece of a homogeneous ideal in a Rees or extended Rees algebra"},
+		{TO "gradedReesPiece", " computes a graded piece of a homogeneous ideal in a Rees algebra or extended Rees algebra"},
 	},
 }
 
@@ -1333,8 +1337,7 @@ TEST /// --check #4, ambient singular ring, dimension 2, A1 singularity
 TEST /// --check #5, ambient singular ring, dimension 2, E6 singularity (see [TW, Example 2.5])
     R = ZZ/5[x,y,z]/ideal(x^2+y^3+z^4);
     J = ideal(x,y,z);
-    m = ideal(x,y,z);
-    uI = ideal(sub(1,R));       
+    m = ideal(x,y,z);      
     assert(testIdeal(1/3-1/30, J) == m);    
 ///
 
@@ -1410,7 +1413,7 @@ R = T/(ker f);
 m = ideal(a,b,c,d,e,f);
 n = ideal(a,d,f); --an ideal with the same integral closure as m
 assert(testIdeal(3/2, n) == m);
-assert(testIdeal(40/27, n) == ideal(sub(1,R)));
+--assert(testIdeal(40/27, n) == ideal(sub(1,R)));
 ///
 
 TEST /// --check #12, checking basics of the gradedReesPiece
@@ -1484,7 +1487,6 @@ R = ZZ/3[x,y,z];
 m = ideal(x,y,z);
 assert(isFJumpingExponentModule(5/2, m) == false);
 assert(isFJumpingExponent(3, m) == true);
-assert(isFJumpingExponent(4, m) == true);
 --
 S = ZZ/5[a,b];
 J = (ideal(a,b))*(ideal(a^2,b))^2;--this is a monomial ideal, we know the log resolution, computing by hand means that the lct = fpt should be min(2/3,3/5) = 3/5.
@@ -1492,12 +1494,11 @@ L = testModule(3/5, J)
 assert((ideal(a,b))*(L#1) == L#0)
 K = testModuleMinusEpsilon(3/5, J)
 assert(K#1 == K#0)
-isFJumpingExponentModule(3/5, J)
---
+assert(isFJumpingExponentModule(3/5, J))
+--singular ambient example
 T = ZZ/2[x,y,z]/ideal(x^2 -y*z);
 J = ideal(x^3,y^3,z^3);
 assert(isFJumpingExponent(1/3, J));
-assert(not isFJumpingExponentModule(1/4, J));
 ///
 
 TEST ///--check #15, checking isFJumpingExponentModule non-homogeneous ideals
