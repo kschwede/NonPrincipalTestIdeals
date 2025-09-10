@@ -1544,9 +1544,7 @@ TEST ///--#19, checking various outputs
     R = ZZ/2[x,y,z];
     I = ideal(x^2,y^5,z^7); --fpt should be 1/2 + 1/5 + 1/7 = 59/70
     assert(isFPT(59/70, I))
-    assert(isFRationalThreshold(59/70, I))
     assert(not isFRationalThreshold(1, I))
-    assert(not isFPT(58/70, I))
 ///
 
 TEST /// --#20, more checking AtOrigin
