@@ -26,8 +26,8 @@ export{
     "manualExt", --since Macaulay2's Ext doesn't give correct answers in rings with negatively graded variables, we make our own manually
     --"IsGraded",
     "AmbientCanonical",--option
-    "ExtendedReesAlgebra",--a flag to see if a ring was created via extendedReesAlgebra
-    "ClassicalReesAlgebra",--a flag to see if a ring was created via classicalReesAlgebra
+    --"ExtendedReesAlgebra",--a flag to see if a ring was created via extendedReesAlgebra
+    --"ClassicalReesAlgebra",--a flag to see if a ring was created via classicalReesAlgebra
     --"ForceExtendedRees", --option
     "isFRationalThreshold",
     --"ReturnMap",
@@ -847,6 +847,7 @@ doc ///
         reesCanonicalModule
         (reesCanonicalModule, Ring)       
         [reesCanonicalModule, AmbientCanonical] 
+        AmbientCanonical
     Headline
         constructs the graded canonical module in a ring constructed via classicalReesAlgebra or extendedReesAlgebra
     Usage
@@ -868,6 +869,7 @@ doc ///
             reesCanonicalModule(S)
             reesCanonicalModule(T)
         Text
+            The option AmbientCanonical is used to specify the canonical module of {\tt ambient S}.  
     Caveat
         One should use this function and not other similar functions to create canonical modules in extended Rees algebras, especially in older versions of Macaulay2.  This is because core Macaulay2 Ext function sometimes gives the wrong answer in rings with variables of negative degrees.  See this github issue @HREF "https://github.com/Macaulay2/M2/issues/3180"@
     SeeAlso

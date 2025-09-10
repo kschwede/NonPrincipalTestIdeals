@@ -1,6 +1,6 @@
 restart
 uninstallPackage "NonPrincipalTestIdeals"
-loadPackage "NonPrincipalTestIdeals"
+loadPackage "NonPrincipalTestIdeals" 
 installPackage "NonPrincipalTestIdeals"
 check NonPrincipalTestIdeals
 
