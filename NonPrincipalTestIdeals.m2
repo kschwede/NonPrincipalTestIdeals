@@ -1,7 +1,7 @@
 newPackage(
     "NonPrincipalTestIdeals",
-    Version => "0.0",
-    Date => "September 6th, 2025",
+    Version => "0.1",
+    Date => "September 10th, 2025",
     Authors => {{Name => "Rahul Ajit", Email => "rahul.ghosh@utah.edu", HomePage => ""},
         {Name => "Matthew Bertucci", Email => "mbertucci@willamette.edu", HomePage => ""}, 
         {Name => "Trung Chau", Email => "trung.chau@utah.edu", HomePage => ""}, 
@@ -785,7 +785,7 @@ document {
     Headline => "a package for calculations of singularities of pairs in positive characteristic",
 	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in Q-Gorenstein rings, although some functions (such as checking for F-pure thresholds) are restricted to quasi-Gorenstein strongly F-regular domains.",
     BR{}, BR{},
-    "This package reduces the problem to the principal case by the mathematics developed in the preprint ", BR{}, EM "Test Modules of Extended Rees Algebras", "by Rahul Ajit, Hunter Simper, ", "arXiv:2509.01693.", BR{}, BR{},"After reducing to the principal case, the functions from the ", EM "TestIdeals", " package are used.  Note that this package requires Macaulay2 version 1.25 or later.", BR{}, BR{},
+    "This package reduces the problem to the principal case by the mathematics developed in the preprint ", BR{}, EM "Test Modules of Extended Rees Algebras ", "by Rahul Ajit, Hunter Simper, ", "arXiv:2509.01693.", BR{}, BR{},"After reducing to the principal case, the functions from the ", EM "TestIdeals", " package are used.  Note that this package requires Macaulay2 version 1.25 or later.", BR{}, BR{},
 	BOLD "Core functions",
 	UL {
 		{TO "testIdeal", " computes the test ideal ", TEX ///$\tau(R, I^t)$///,},
@@ -799,6 +799,8 @@ document {
 	UL {
 		{TO "gradedReesPiece", " computes a graded piece of a homogeneous ideal in a Rees algebra or extended Rees algebra"},
 	},
+    BR{}, BR{},
+    EM "History:","This package was started in the 2023-2024 RTG seminar for the NSF RTG grant #1840190 at the University of Utah."
 }
 
 doc ///
@@ -1119,7 +1121,7 @@ doc ///
         Text
             Given an ideal $J$ in a ring $R$ and a rational number $t$, this function determines if $\tau(\omega_R, J^t) \neq \tau(\omega_R, J^{t-\epsilon})$ for all $1 \gg \epsilon > 0$.  If so, it returns true, that is $t$ is a jumping exponent of $\tau(\omega_R, J^*)$, and otherwise it returns false.
         Example
-            R = ZZ/5[x,y,z];
+            R = ZZ/3[x,y,z];
             J = ideal(x^3,y^4,z^5);
             isFJumpingExponent(1/3+1/4+1/5, J) -- should be true, this is the fpt = lct
             isFJumpingExponent(1/3+1/4, J) -- should be false
