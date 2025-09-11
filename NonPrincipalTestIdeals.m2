@@ -802,7 +802,9 @@ document {
 		{TO "gradedReesPiece", " computes a graded piece of a homogeneous ideal in a Rees algebra or extended Rees algebra"},
 	},
     BR{}, BR{},
-    EM "History:","This package was started in the 2023-2024 RTG seminar for the NSF RTG grant #1840190 at the University of Utah."
+    BOLD "Requirements:", "All functions in this package require the ambient ring to be a reduced equidimensional ring.  This ring must also be presented as a polynomial ring over a field of characteristic ", TEX ///$p > 0$///, "quotiented by an ideal.  Some other functions including ", TT "testIdeal", ", ", "isFPT", ", ", TT "isFJumpingNumber", ", ", TT "torsionOrder", ", ", " and, ", TT "isInvertibleIdeal", " require the ring to be a normal (or at least G1+S2) domain, and in some cases even more.",
+    BR{}, BR{},
+    BOLD "History:","This package was started in the 2023-2024 RTG seminar for the NSF RTG grant #1840190 at the University of Utah."
 }
 
 doc ///
@@ -1206,6 +1208,41 @@ doc ///
 
 doc ///
     Key
+        torsionOrder
+        (torsionOrder, ZZ, Ideal)
+    Headline
+        computes the local torsion order of an ideal in a normal domain
+    Usage
+        (m,J) = torsionOrder(n, I)
+    Inputs
+        n: ZZ
+            the maximum order to check
+        I: Ideal
+            the ideal you want to check
+    Outputs
+        m: ZZ
+            the local torsion order of the ideal in the class group, or 0 if not found
+        J: Ideal
+            the reflexive hull of $I^n$
+    Description
+        Text
+            Given an ideal $I$ in a normal (or G1 + S2) domain, this computes the local torsion order of the class of $I$.  In other words, this computes the smallest integer $m$ such that $I^{m}$ is locally principal up to reflexification (that is, $(I^{m})^{**}$ is locally principal).  
+        Text
+            This function returns a pair $(m, (I^{m})^{**})$ if such an $m$ is found.  If no $m$ is found, this returns $(0, ideal 0)$.
+        Example
+            R = QQ[x,y,z]/ideal(x*y+z^7);
+            I = ideal(x,z);
+            torsionOrder(10, I) --the order should be 7
+            torsionOrder(5, I) --we only check up to 5, so this should return 0        
+        Text
+            As we are computing the reflexive hull, this function does not distinguish between the ideal $I$ and the ideal made up of the height-one components of a primary decomposition of $I$.
+        Example
+            R = ZZ/5[a,b,c]/ideal(a*b-c^8)
+            torsionOrder(10, (ideal(a,b,c))^2*(ideal(a,c)))
+///
+
+doc ///
+    Key
         isFRationalThreshold
         (isFRationalThreshold, QQ, Ideal)
         (isFRationalThreshold, ZZ, Ideal)
@@ -1562,6 +1599,21 @@ R = ZZ/3[u,v]
 I = ideal( (u-1)^2, v^3) --fpt should be 1/2+1/3 = 5/6, but it's not the threshold at the origin
 assert(isFPT(5/6, I))
 assert(not isFRationalThreshold(5/6, I, AtOrigin=>true))
+///
+
+TEST ///-- #21, checking torsion order and isInvertibleIdeal
+R = QQ[x,y,z]/ideal(x*y+z^5);
+I = ideal(x,z);
+tList = torsionOrder(7, I);
+assert(tList#0 == 5);
+assert(tList#1 == ideal(x));
+assert((torsionOrder(4,I))#0 == 0);
+assert(not isInvertibleIdeal(I));
+assert(isInvertibleIdeal(tList#1));
+J = (ideal gens R)^2*I
+tList = torsionOrder(7, J);
+assert(tList#0 == 5);
+assert(not isInvertibleIdeal(J));
 ///
 
 
