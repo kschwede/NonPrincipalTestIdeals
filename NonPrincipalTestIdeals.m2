@@ -37,6 +37,8 @@ export{
 }
 
 --the following function checks to see if an ideal is locally principal.
+--it only is guaranteed to work in a normal domain.
+--todo-rewrite this so it works in more general rings
 isInvertibleIdeal = method(Options=>{});
 isInvertibleIdeal(Ideal) := Boolean => opts -> (I1) -> (
     IDminus := dualize(I1); 
@@ -1170,7 +1172,7 @@ doc ///
         isInvertibleIdeal
         (isInvertibleIdeal, Ideal)
     Headline
-        This function checks whether an ideal is locally principal in an integral domain. It returns true if the ideal is, and false otherwise.
+        checks whether an ideal is locally principal (invertible)
     Usage
         b = isInvertibleIdeal(I)
     Inputs
@@ -1179,7 +1181,7 @@ doc ///
         b: Boolean
     Description
         Text
-            Given an ideal $I$, this function returns true if $I$ is locally principal, and false otherwise.
+            Given an ideal $I$, this function returns true if $I$ is locally principal, and false otherwise.  
         Example
             R = QQ[x,y]/(y^2-x*(x-1)*(x+1)); --an elliptic curve
             I = ideal(x,y); --corresponding to a point, should be invertible, even if not principal
