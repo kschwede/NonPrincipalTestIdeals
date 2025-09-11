@@ -37,6 +37,8 @@ export{
 }
 
 --the following function checks to see if an ideal is locally principal.
+--it only is guaranteed to work in a normal domain.
+--todo-rewrite this so it works in more general rings
 isInvertibleIdeal = method(Options=>{});
 isInvertibleIdeal(Ideal) := Boolean => opts -> (I1) -> (
     IDminus := dualize(I1); 
@@ -1102,7 +1104,9 @@ doc ///
     Key
         isFJumpingExponentModule
         (isFJumpingExponentModule, QQ, Ideal)
-        (isFJumpingExponentModule, ZZ, Ideal)        
+        (isFJumpingExponentModule, ZZ, Ideal)  
+        (isFJumpingExponent, QQ, Ideal)
+        (isFJumpingExponent, ZZ, Ideal)        
         [isFJumpingExponentModule, AtOrigin]
         [isFJumpingExponentModule,FrobeniusRootStrategy]
         [isFJumpingExponentModule,Verbose]
@@ -1132,6 +1136,8 @@ doc ///
             J = ideal(x-1,y);
             isFJumpingExponentModule(2, J, AtOrigin=>false)
             isFJumpingExponentModule(2, J, AtOrigin=>true)
+        Text
+            The formulation {\tt isFJumpingExponent(t, J)} also computes whether the test ideal jumps at $t$.  However, it only works if $R$ is a quasi-Gorenstein normal domain as in that case the jumping numbers of $\tau(R, J^t)$ agree with those of $\tau(\omega_R, J^t)$.
     SeeAlso
         isFJumpingExponent
         (isFPT, QQ, Ideal)
@@ -1172,7 +1178,7 @@ doc ///
         isInvertibleIdeal
         (isInvertibleIdeal, Ideal)
     Headline
-        This function checks whether an ideal is locally principal in an integral domain. It returns true if the ideal is, and false otherwise.
+        checks whether an ideal is locally principal (invertible)
     Usage
         b = isInvertibleIdeal(I)
     Inputs
@@ -1181,7 +1187,7 @@ doc ///
         b: Boolean
     Description
         Text
-            Given an ideal $I$, this function returns true if $I$ is locally principal, and false otherwise.
+            Given an ideal $I$, this function returns true if $I$ is locally principal, and false otherwise.  It will work in a normal domain (or more generally a G1 + S2 domain reduced equidimensional ring).
         Example
             R = QQ[x,y]/(y^2-x*(x-1)*(x+1)); --an elliptic curve
             I = ideal(x,y); --corresponding to a point, should be invertible, even if not principal
