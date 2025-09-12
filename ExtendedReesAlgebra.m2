@@ -1,6 +1,6 @@
 getValidVarName = method();
 getValidVarName(Ring) := (R1) -> (
-    --this should be smarter, not sure the right way to do it.  This ougt to work for now.
+    --this should be smarter, not sure the right way to do it.  This ought to work for now.
     s1 := toList("abcdefghijklmnopqrstuvwxyz");
     s1#(random (#s1))
 )

@@ -8,7 +8,7 @@ newPackage(
         {Name => "Karl Schwede", Email => "schwede@math.utah.edu", HomePage => ""},
         {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => ""}},
     Headline => "",
-    Headline => "singularities of pairs with non-principals ideals",
+    Headline => "singularities of pairs with non-principal ideals",
     Keywords => {},
     DebuggingMode => true,
     Reload=>true,     
@@ -46,7 +46,7 @@ isInvertibleIdeal(Ideal) := Boolean => opts -> (I1) -> (
 	(myProduct == reflexify(myProduct))
 );
 
---the following function checks tries to compute the torsion order of an ideal I1 up to a certain power n1.
+--the following function tries to compute the torsion order of an ideal I1 up to a certain power n1.
 torsionOrder = method(Options =>{});
 torsionOrder(ZZ, Ideal) := (ZZ, Ideal) => opts -> (n1, I1) -> (
     i := 1;
@@ -68,10 +68,10 @@ manualExt(ZZ,Module,Module):= (Module) => opts -> (n1, M1, M2) -> (
     HH^n1(myResHom)
 );
 
---the degress need to be fixed to work with extended Rees algebras
+--the degrees need to be fixed to work with extended Rees algebras
 --KARL is looking at if this is correct right now.
 
---This takes a Rees algebra or extended Rees algebra, constructed inn this package using either 
+--This takes a Rees algebra or extended Rees algebra, constructed in this package using either 
 --classicalReesAlgebra
 --or
 --extendedReesAlgebra
@@ -87,7 +87,7 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
 	degList := {};
     degSum := 0; --default value 0
     local ambcan;
-    if o.AmbientCanonical === null then ( --we do things slightly weirdly for extended rees algebras.
+    if o.AmbientCanonical === null then ( --we do things slightly weirdly for extended Rees algebras.
         if (R1#?"ExtendedReesAlgebra") and (R1#"ExtendedReesAlgebra") then (
             varList = select(varList, z -> ((degree z)#0 >= 0));--grab variables with positive initial degree
             degList = apply(varList, q -> (degree(q))); --grab their degrees next
@@ -262,7 +262,7 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
         return tempGens;
     )
     else (
-        error "gradedReesPiece: expected a module over a ring constructed via classicalReesAlgebra or extendedReesAlgebra.";
+        error "gradedReesPiece: Expected a module over a ring constructed via classicalReesAlgebra or extendedReesAlgebra.";
     )
 );
 
@@ -491,7 +491,7 @@ testModuleMinusEpsilon(QQ, Ideal) := opts -> (n1, I1) -> (
     omegaS1List := reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
     baseCanonical := reflexify gradedReesPiece(degShift-1 - dim R1, omegaS1List#0);
-    --if (not isInvertibleIdeal baseCanonical) then error "testIdealMinusEpsilonNP: expected a quasi-Gorenstein ambient ring";
+    --if (not isInvertibleIdeal baseCanonical) then error "testIdealMinusEpsilonNP: Expected a quasi-Gorenstein ambient ring";
     baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
     --print "test3";
     baseTau := baseTauList#0;
@@ -785,9 +785,9 @@ beginDocumentation()
 document {
     Key => "NonPrincipalTestIdeals",
     Headline => "a package for calculations of singularities of pairs in positive characteristic",
-	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, "of a pair ",TEX ///$(R, I^t)$///, "where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in Q-Gorenstein rings, although some functions (such as checking for F-pure thresholds) are restricted to quasi-Gorenstein strongly F-regular domains.",
+	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, " of a pair ",TEX ///$(R, I^t)$///, " where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in Q-Gorenstein rings, although some functions (such as checking for F-pure thresholds) are restricted to quasi-Gorenstein strongly F-regular domains.",
     BR{}, BR{},
-    "This package reduces the problem to the principal case by the mathematics developed in the preprint ", BR{}, EM "Test Modules of Extended Rees Algebras ", "by Rahul Ajit, Hunter Simper, ", "arXiv:2509.01693.", BR{}, BR{},"After reducing to the principal case, the functions from the ", EM "TestIdeals", " package are used.  Note that this package requires Macaulay2 version 1.25 or later.", BR{}, BR{},
+    "This package reduces the problem to the principal case by the mathematics developed in the preprint ", BR{}, EM "Test Modules of Extended Rees Algebras ", "by Rahul Ajit and Hunter Simper, ", "arXiv:2509.01693.", BR{}, BR{},"After reducing to the principal case, the functions from the ", EM "TestIdeals", " package are used.  Note that this package requires Macaulay2 version 1.25 or later.", BR{}, BR{},
 	BOLD "Core functions",
 	UL {
 		{TO "testIdeal", " computes the test ideal ", TEX ///$\tau(R, I^t)$///,},
@@ -802,9 +802,9 @@ document {
 		{TO "gradedReesPiece", " computes a graded piece of a homogeneous ideal in a Rees algebra or extended Rees algebra"},
 	},
     BR{}, BR{},
-    BOLD "Requirements:", "All functions in this package require the ambient ring to be a reduced equidimensional ring.  This ring must also be presented as a polynomial ring over a field of characteristic ", TEX ///$p > 0$///, "quotiented by an ideal.  Some other functions including ", TT "testIdeal", ", ", "isFPT", ", ", TT "isFJumpingNumber", ", ", TT "torsionOrder", ", ", " and, ", TT "isInvertibleIdeal", " require the ring to be a normal (or at least G1+S2) domain, and in some cases even more.",
+    BOLD "Requirements: ", "All functions in this package require the ambient ring to be a reduced equidimensional ring.  This ring must also be presented as a polynomial ring over a field of characteristic ", TEX ///$p > 0$///, " quotiented by an ideal.  Some other functions including ", TT "testIdeal", ", ", TT "isFPT", ", ", TT "isFJumpingNumber", ", ", TT "torsionOrder", ", ", " and ", TT "isInvertibleIdeal", " require the ring to be a normal (or at least G1+S2) domain, and in some cases even more.",
     BR{}, BR{},
-    BOLD "History:","This package was started in the 2023-2024 RTG seminar for the NSF RTG grant #1840190 at the University of Utah."
+    BOLD "History: ","This package was started in the 2023-2024 RTG seminar for the NSF RTG grant #1840190 at the University of Utah."
 }
 
 doc ///
@@ -812,7 +812,7 @@ doc ///
         gradedReesPiece
         (gradedReesPiece, ZZ, Ideal)        
     Headline
-        get a certain degree piece of an ideal in an (extended) Rees algebra
+        gets a certain degree piece of an ideal in an (extended) Rees algebra
     Usage
         J = gradedReesPiece(n, I)
     Inputs
@@ -928,7 +928,7 @@ doc ///
         (testIdeal, QQ, Ideal)
         (testIdeal, ZZ, Ideal)
     Headline
-        compute the test ideal of a pair
+        computes the test ideal of a pair
     Usage
         J = testIdeal(t, I)
     Inputs
@@ -967,7 +967,7 @@ doc ///
         (testModule, QQ, Ideal)
         (testModule, ZZ, Ideal)
     Headline
-        compute the test ideal of a pair
+        computes the test ideal of a pair
     Usage
         J = testModule(t, I)
     Inputs
@@ -1012,7 +1012,7 @@ doc ///
         classicalReesAlgebra
         (classicalReesAlgebra, Ideal)
     Headline
-        compute the flattened the Rees algebra 
+        computes the flattened Rees algebra 
     Usage
         S = classicalReesAlgebra(J)
     Inputs
@@ -1046,7 +1046,7 @@ doc ///
         extendedReesAlgebra
         (extendedReesAlgebra, Ideal)
     Headline
-        compute the flattened extended Rees algebra
+        computes the flattened extended Rees algebra
     Usage
         S = extendedReesAlgebra(J)
     Inputs
@@ -1075,7 +1075,7 @@ doc ///
         (testModuleMinusEpsilon, ZZ, Ideal)
         (testModuleMinusEpsilon, QQ, Ideal)        
     Headline
-        compute the (parameter) test module of a pair for values arbitrarily close to, but below, t
+        computes the (parameter) test module of a pair for values arbitrarily close to, but below, t
     Usage
         M = testModuleMinusEpsilon(t, J)
     Inputs
@@ -1113,7 +1113,7 @@ doc ///
         [isFJumpingExponentModule,FrobeniusRootStrategy]
         [isFJumpingExponentModule,Verbose]
     Headline
-        decide if a rational number is a jumping exponent of a generalized parameter test module
+        decides if a rational number is a jumping exponent of a generalized parameter test module
     Usage
         b = isFJumpingExponentModule(t, J)
     Inputs
@@ -1150,7 +1150,7 @@ doc ///
         manualExt
         (manualExt, ZZ, Module, Module)
     Headline
-        compute the Ext module of two modules as the core Ext function sometimes does not work properly in the negatively graded case
+        computes the Ext module of two modules as the core Ext function sometimes does not work properly in the negatively graded case
     Usage
         M = manualExt(t, N, P)
     Inputs
@@ -1504,7 +1504,7 @@ assert(base*(ideal(a,b,c))^2 == gradedReesPiece(1, IT))
 assert(base*(ideal(a,b,c))^6 == gradedReesPiece(3, IT))
 ///
 
-TEST /// --check #13, checking the basics of constructing canonical modules on simple rees algebras
+TEST /// --check #13, checking the basics of constructing canonical modules on simple Rees algebras
 R = QQ[x,y,z];
 J = ideal(x,y,z);
 S = classicalReesAlgebra(J);
