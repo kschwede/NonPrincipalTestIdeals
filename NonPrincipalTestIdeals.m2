@@ -6,7 +6,7 @@ newPackage(
         {Name => "Matthew Bertucci", Email => "mbertucci@willamette.edu", HomePage => ""}, 
         {Name => "Trung Chau", Email => "trung.chau@utah.edu", HomePage => ""}, 
         {Name => "Karl Schwede", Email => "schwede@math.utah.edu", HomePage => ""},
-        {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => ""}},
+        {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => ""}},    
     Headline => "",
     Headline => "singularities of pairs with non-principal ideals",
     Keywords => {},
@@ -803,6 +803,8 @@ document {
 	},
     BR{}, BR{},
     BOLD "Requirements: ", "All functions in this package require the ambient ring to be a reduced equidimensional ring.  This ring must also be presented as a polynomial ring over a field of characteristic ", TEX ///$p > 0$///, " quotiented by an ideal.  Some other functions including ", TT "testIdeal", ", ", TT "isFPT", ", ", TT "isFJumpingNumber", ", ", TT "torsionOrder", ", ", " and ", TT "isInvertibleIdeal", " require the ring to be a normal (or at least G1+S2) domain, and in some cases even more.",
+    BR{}, BR{},    
+    Contributors => {"Matthew Bertucci also contributed to the development of this package"},
     BR{}, BR{},
     BOLD "History: ","This package was started in the 2023-2024 RTG seminar for the NSF RTG grant #1840190 at the University of Utah."
 }
