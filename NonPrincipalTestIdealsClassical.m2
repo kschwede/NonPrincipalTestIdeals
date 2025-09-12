@@ -24,7 +24,7 @@ needsPackage "TestIdeals"
 --load "ExtendedReesAlgebra.m2"
 --load "CanonicalModules.m2"
 
---the degress need to be fixed to work with extended Rees algebras
+--the degrees need to be fixed to work with extended Rees algebras
 canonicalModule2 = method(Options=>{AmbientCanonical => null})
 canonicalModule2(Ring) := Module => o->(R1) -> (
 	S1 := ambient R1;
@@ -67,7 +67,7 @@ ExtendedReesAlgebra = new Type of QuotientRing
 
 getValidVarName = method();
 getValidVarName(Ring) := (R1) -> (
-    --this should be smarter, not sure the right way to do it.  This ougt to work for now.
+    --this should be smarter, not sure the right way to do it.  This ought to work for now.
     s1 := toList("abcdefghijklmnopqrstuvwxyz");
     s1#(random (#s1))
 )

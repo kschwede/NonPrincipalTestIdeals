@@ -8,7 +8,7 @@ newPackage(
         {Name => "Karl Schwede", Email => "schwede@math.utah.edu", HomePage => ""},
         {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => ""}},
     Headline => "",
-    Headline => "singularities of pairs with non-principals ideals",
+    Headline => "singularities of pairs with non-principal ideals",
     Keywords => {},
     DebuggingMode => true,
     Reload=>true,     
@@ -68,10 +68,10 @@ manualExt(ZZ,Module,Module):= (Module) => opts -> (n1, M1, M2) -> (
     HH^n1(myResHom)
 );
 
---the degress need to be fixed to work with extended Rees algebras
+--the degrees need to be fixed to work with extended Rees algebras
 --KARL is looking at if this is correct right now.
 
---This takes a Rees algebra or extended Rees algebra, constructed inn this package using either 
+--This takes a Rees algebra or extended Rees algebra, constructed in this package using either 
 --classicalReesAlgebra
 --or
 --extendedReesAlgebra
@@ -87,7 +87,7 @@ reesCanonicalModule(Ring) := Module => o->(R1) -> (
 	degList := {};
     degSum := 0; --default value 0
     local ambcan;
-    if o.AmbientCanonical === null then ( --we do things slightly weirdly for extended rees algebras.
+    if o.AmbientCanonical === null then ( --we do things slightly weirdly for extended Rees algebras.
         if (R1#?"ExtendedReesAlgebra") and (R1#"ExtendedReesAlgebra") then (
             varList = select(varList, z -> ((degree z)#0 >= 0));--grab variables with positive initial degree
             degList = apply(varList, q -> (degree(q))); --grab their degrees next
@@ -262,7 +262,7 @@ gradedReesPiece(ZZ, Ideal) := opts -> (n1, J1) -> (
         return tempGens;
     )
     else (
-        error "gradedReesPiece: expected a module over a ring constructed via classicalReesAlgebra or extendedReesAlgebra.";
+        error "gradedReesPiece: Expected a module over a ring constructed via classicalReesAlgebra or extendedReesAlgebra.";
     )
 );
 
@@ -491,7 +491,7 @@ testModuleMinusEpsilon(QQ, Ideal) := opts -> (n1, I1) -> (
     omegaS1List := reesModuleToIdeal(S1, omegaS1); --, Homogeneous=>true, Map => true);
     degShift := (omegaS1List#1)#0;
     baseCanonical := reflexify gradedReesPiece(degShift-1 - dim R1, omegaS1List#0);
-    --if (not isInvertibleIdeal baseCanonical) then error "testIdealMinusEpsilonNP: expected a quasi-Gorenstein ambient ring";
+    --if (not isInvertibleIdeal baseCanonical) then error "testIdealMinusEpsilonNP: Expected a quasi-Gorenstein ambient ring";
     baseTauList := testModule(S1, AssumeDomain=>true, CanonicalIdeal=>omegaS1List#0);
     --print "test3";
     baseTau := baseTauList#0;
@@ -1504,7 +1504,7 @@ assert(base*(ideal(a,b,c))^2 == gradedReesPiece(1, IT))
 assert(base*(ideal(a,b,c))^6 == gradedReesPiece(3, IT))
 ///
 
-TEST /// --check #13, checking the basics of constructing canonical modules on simple rees algebras
+TEST /// --check #13, checking the basics of constructing canonical modules on simple Rees algebras
 R = QQ[x,y,z];
 J = ideal(x,y,z);
 S = classicalReesAlgebra(J);
