@@ -3,7 +3,6 @@ newPackage(
     Version => "0.1",
     Date => "September 10th, 2025",
     Authors => {{Name => "Rahul Ajit", Email => "rahul.ghosh@utah.edu", HomePage => ""},
-        {Name => "Matthew Bertucci", Email => "mbertucci@willamette.edu", HomePage => ""}, 
         {Name => "Trung Chau", Email => "trung.chau@utah.edu", HomePage => ""}, 
         {Name => "Karl Schwede", Email => "schwede@math.utah.edu", HomePage => ""},
         {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => ""}},    
