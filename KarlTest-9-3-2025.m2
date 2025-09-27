@@ -2,6 +2,7 @@ restart
 uninstallPackage "NonPrincipalTestIdeals"
 loadPackage "NonPrincipalTestIdeals" 
 installPackage "NonPrincipalTestIdeals"
+viewHelp NonPrincipalTestIdeals
 check NonPrincipalTestIdeals
 
 restart
