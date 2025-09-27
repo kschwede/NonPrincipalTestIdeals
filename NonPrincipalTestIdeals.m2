@@ -3,13 +3,13 @@ newPackage(
     Version => "1.0",
     Date => "September 27th, 2025",
     Authors => {
-        {Name => "Trung Chau", Email => "trung.chau@utah.edu", HomePage => "https://trungchaumath.github.io/"}, 
+        {Name => "Trung Chau", Email => "chauchitrung1996@gmail.com", HomePage => "https://trungchaumath.github.io/"}, 
         {Name => "Karl Schwede", Email => "schwede@math.utah.edu", HomePage => "https://www.math.utah.edu/~schwede/"},
         {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => "https://www.huntersimper.com/"}},    
     Headline => "",
     Headline => "singularities of pairs with non-principal ideals",
     Keywords => {"Test ideal", "Extended Rees algebra", "F-pure threshold", "canonical module", "F-jumping number"},
-    DebuggingMode => true,
+    DebuggingMode => false,
     Reload=>true,     
     PackageExports => {"Divisor", "TestIdeals", "FrobeniusThresholds", "ReesAlgebra", "Complexes"}
     )
