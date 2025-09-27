@@ -1,11 +1,11 @@
 newPackage(
     "NonPrincipalTestIdeals",
-    Version => "0.1",
-    Date => "September 10th, 2025",
-    Authors => {{Name => "Rahul Ajit", Email => "rahul.ghosh@utah.edu", HomePage => ""},
-        {Name => "Trung Chau", Email => "trung.chau@utah.edu", HomePage => ""}, 
-        {Name => "Karl Schwede", Email => "schwede@math.utah.edu", HomePage => ""},
-        {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => ""}},    
+    Version => "1.0",
+    Date => "September 27th, 2025",
+    Authors => {
+        {Name => "Trung Chau", Email => "trung.chau@utah.edu", HomePage => "https://trungchaumath.github.io/"}, 
+        {Name => "Karl Schwede", Email => "schwede@math.utah.edu", HomePage => "https://www.math.utah.edu/~schwede/"},
+        {Name => "Hunter Simper", Email => "hunter.simper@utah.edu", HomePage => "https://www.huntersimper.com/"}},    
     Headline => "",
     Headline => "singularities of pairs with non-principal ideals",
     Keywords => {},
@@ -786,7 +786,7 @@ document {
     Headline => "a package for calculations of singularities of pairs in positive characteristic",
 	EM "NonPrincipalTestIdeals", " is a package that can compute a test ideal ", TEX ///$\tau(R, I^t)$///, " of a pair ",TEX ///$(R, I^t)$///, " where ", TEX ///$R$///, " is a domain, ", TEX ///$I$///,  " is an ideal, and ", TEX ///$t > 0$///, " is a rational number.  Currently, it works in Q-Gorenstein rings, although some functions (such as checking for F-pure thresholds) are restricted to quasi-Gorenstein strongly F-regular domains.",
     BR{}, BR{},
-    "This package reduces the problem to the principal case by the mathematics developed in the preprint ", BR{}, EM "Test Modules of Extended Rees Algebras ", "by Rahul Ajit and Hunter Simper, ", "arXiv:2509.01693.", BR{}, BR{},"After reducing to the principal case, the functions from the ", EM "TestIdeals", " package are used.  Note that this package requires Macaulay2 version 1.25 or later.", BR{}, BR{},
+    "This package reduces the problem to the principal case by the mathematics developed in the preprint ", BR{}, EM "Test Modules of Extended Rees Algebras ", "by Rahul Ajit and Hunter Simper, ", "arXiv:2509.01693.", BR{}, BR{},"After reducing to the principal case, some functions from the ", EM "TestIdeals", " package are used.  Note that this package requires Macaulay2 version 1.25 or later.", BR{}, BR{},
 	BOLD "Core functions",
 	UL {
 		{TO "testIdeal", " computes the test ideal ", TEX ///$\tau(R, I^t)$///,},
@@ -803,9 +803,9 @@ document {
     BR{}, BR{},
     BOLD "Requirements: ", "All functions in this package require the ambient ring to be a reduced equidimensional ring.  This ring must also be presented as a polynomial ring over a field of characteristic ", TEX ///$p > 0$///, " quotiented by an ideal.  Some other functions including ", TT "testIdeal", ", ", TT "isFPT", ", ", TT "isFJumpingNumber", ", ", TT "torsionOrder", ", ", " and ", TT "isInvertibleIdeal", " require the ring to be a normal (or at least G1+S2) domain, and in some cases even more.",
     BR{}, BR{},    
-    Contributors => {"Matthew Bertucci also contributed to the development of this package"},
+    Contributors => {"Rahul Ajit and Matthew Bertucci also contributed to the development of this package."},
     BR{}, BR{},
-    BOLD "History: ","This package was started in the 2023-2024 RTG seminar for the NSF RTG grant #1840190 at the University of Utah."
+    BOLD "History and support: ","This package was started in the 2023-2024 RTG seminar for the NSF RTG grant #1840190 at the University of Utah.  Schwede also received support from NSF grants #2101800 and #2501903 while working on this package."
 }
 
 doc ///
