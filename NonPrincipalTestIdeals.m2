@@ -1574,7 +1574,6 @@ assert (not isFPT(1+5/6, J));
 ///
 
 TEST ///--#17, checking a non-polynomial FPT
-loadPackage "NonPrincipalTestIdeals"
 R = ZZ/3[x,y,z]/ideal(x*y-z^2); --threshold should be 1
 J = ideal(x,y,z);
 assert(isFPT(1/1,J))
